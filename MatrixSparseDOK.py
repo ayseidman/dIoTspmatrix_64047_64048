@@ -2,6 +2,7 @@ from __future__ import annotations
 from MatrixSparse import *
 from Position import *
 
+
 spmatrix = dict[Position, float]
 
 
@@ -9,17 +10,21 @@ class MatrixSparseDOK(MatrixSparse):
     _items = spmatrix
 
     def __init__(self, zero: float = 0.0):
-        if not isinstance(zero, [int, float]):
-            raise ValueError('__init__ invalid argument')
-        self._items = MatrixSparseDOK._items([])
+        # invoking the __init__ of the parent class
+        super(MatrixSparseDOK,self).__init__(zero)
 
+        self._min_row, self._min_col = -1, -1
+        self._max_row, self._max_col = -1, -1
+
+        self._items = MatrixSparseDOK._items({})
 
 
     def __copy__(self):
-        pass
+        """ """
+        return {position: value for position, value in self}
 
     def __eq__(self, other: MatrixSparseDOK):
-        pass
+        return (self.zero == other.zero) and (self._items == other._items)
 
     def __iter__(self):
         pass
@@ -28,7 +33,19 @@ class MatrixSparseDOK(MatrixSparse):
         pass
 
     def __getitem__(self, pos: [Position, position]) -> float:
-        pass
+        if not isinstance(pos, (Position, tuple)):
+            raise ValueError("__getitem__() invalid arguments")
+        #now we have either a Position or a position tuple
+        if isinstance(pos, tuple):
+            if len(pos) == 2:
+                pos = Position(pos[0], pos[1])
+            else:
+                raise ValueError("__getitem__() invalid arguments")
+
+        if pos in self._items.keys():
+            return self._items[pos]
+        else:
+            return self.zero
 
     def __setitem__(self, pos: [Position, position], val: [int, float]):
         pass
@@ -49,6 +66,7 @@ class MatrixSparseDOK(MatrixSparse):
         pass
 
     def dim(self) -> tuple[Position, ...]:
+        """ :return dim = Position(min_row, min_col), Position(max_row, max_col)"""
         pass
 
     def row(self, row: int) -> Matrix:

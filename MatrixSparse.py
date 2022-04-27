@@ -9,15 +9,20 @@ class MatrixSparse(Matrix):
     _zero = float
 
     def __init__(self, zero):
-        pass
+        super(MatrixSparse, self).__init__()
+        self.zero = zero
 
     @property
     def zero(self) -> float:
-        pass
+        """ Python getter for zero """
+        return self._zero
 
     @zero.setter
     def zero(self, val: float):
-        pass
+        """ Python setter for zero """
+        if not isinstance(val, (int, float)): # Check if zero is valid.
+            raise ValueError('zero invalid argument')
+        self._zero = val
 
     @abstractmethod
     def __len__(self) -> int:
