@@ -11,13 +11,9 @@ class MatrixSparseDOK(MatrixSparse):
 
     def __init__(self, zero: float = 0.0):
         # invoking the __init__ of the parent class
-        super(MatrixSparseDOK,self).__init__(zero)
-
-        self._min_row, self._min_col = -1, -1
-        self._max_row, self._max_col = -1, -1
+        super(MatrixSparseDOK, self).__init__(zero)
 
         self._items = MatrixSparseDOK._items({})
-
 
     def __copy__(self):
         """ """
@@ -27,20 +23,20 @@ class MatrixSparseDOK(MatrixSparse):
         return (self.zero == other.zero) and (self._items == other._items)
 
     def __iter__(self):
-        pass
+        self._index = -1
+        self._items_sorted = sorted(self._items.keys(), key=lambda pos: (pos[0], pos[1]))
 
     def __next__(self):
-        pass
+        self._index += 1
+        if self._index == len(self):
+            raise StopIteration
+        return self._items_sorted[self._index]
 
     def __getitem__(self, pos: [Position, position]) -> float:
-        if not isinstance(pos, (Position, tuple)):
+        try:
+            pos = self._check_pos(pos)
+        except ValueError:
             raise ValueError("__getitem__() invalid arguments")
-        #now we have either a Position or a position tuple
-        if isinstance(pos, tuple):
-            if len(pos) == 2:
-                pos = Position(pos[0], pos[1])
-            else:
-                raise ValueError("__getitem__() invalid arguments")
 
         if pos in self._items.keys():
             return self._items[pos]
@@ -48,10 +44,23 @@ class MatrixSparseDOK(MatrixSparse):
             return self.zero
 
     def __setitem__(self, pos: [Position, position], val: [int, float]):
-        pass
+        try:
+            pos = self._check_pos(pos)
+        except ValueError:
+            raise ValueError("__setitem__() invalid arguments")
+
+        if not isinstance(val, (int, float)):
+            raise ValueError("__setitem__() invalid arguments")
+
+        if val == self.zero:
+            if pos in self._items.keys():
+                del self._items[pos]
+        else:
+            self._items[pos] = val
 
     def __len__(self) -> int:
-        pass
+        """ :return the number of the non-zero elements. """
+        return len(self._items)
 
     def _add_number(self, other: [int, float]) -> Matrix:
         pass
@@ -67,6 +76,7 @@ class MatrixSparseDOK(MatrixSparse):
 
     def dim(self) -> tuple[Position, ...]:
         """ :return dim = Position(min_row, min_col), Position(max_row, max_col)"""
+        # Implement For
         pass
 
     def row(self, row: int) -> Matrix:
@@ -95,3 +105,20 @@ class MatrixSparseDOK(MatrixSparse):
     @staticmethod
     def decompress(compressed_vector: compressed) -> MatrixSparse:
         pass
+
+    def _check_pos(self, pos):
+        """
+        Checks whether the position entered by user is valid or not.
+        :param pos: Position object or tuple
+        :return: Position object if pos is valid, raise exception if not
+        """
+        if not isinstance(pos, (Position, tuple)):
+            raise ValueError("invalid position arguments")
+        # now we have either a Position or a position tuple
+        if isinstance(pos, tuple):
+            if len(pos) == 2:
+                pos = Position(pos[0], pos[1])
+            else:
+                raise ValueError("invalid position arguments")
+
+        return pos
