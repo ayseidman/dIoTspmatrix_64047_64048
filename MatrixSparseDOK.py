@@ -10,21 +10,35 @@ class MatrixSparseDOK(MatrixSparse):
     _items = spmatrix
 
     def __init__(self, zero: float = 0.0):
-        # invoking the __init__ of the parent class
-        super(MatrixSparseDOK, self).__init__(zero)
-
         self._items = MatrixSparseDOK._items({})
+        # invoking the __init__ of the parent class
+        try:
+            super(MatrixSparseDOK, self).__init__(zero)
+        except ValueError:
+            raise ValueError("__init__() invalid arguments")
+
+    @MatrixSparse.zero.setter
+    def zero(self, val: float):
+        """ Overriding the zero.setter of parent class to delete the new zero valued items. """
+        super(MatrixSparseDOK, self.__class__).zero.fset(self, val)
+
+        self._items = {position:value for position, value in self._items.items() if value != self.zero}
 
     def __copy__(self):
-        """ """
-        return {position: value for position, value in self}
+        replica = MatrixSparseDOK(self.zero)
+        for position, value in self._items.items():
+            replica[position] = value
+        return replica
 
     def __eq__(self, other: MatrixSparseDOK):
+        if not isinstance(other, MatrixSparseDOK):
+            return False
         return (self.zero == other.zero) and (self._items == other._items)
 
     def __iter__(self):
         self._index = -1
         self._items_sorted = sorted(self._items.keys(), key=lambda pos: (pos[0], pos[1]))
+        return self
 
     def __next__(self):
         self._index += 1
