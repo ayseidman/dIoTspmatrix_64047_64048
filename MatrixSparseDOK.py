@@ -126,7 +126,20 @@ class MatrixSparseDOK(MatrixSparse):
         return colMatrix
 
     def diagonal(self) -> Matrix:
-        pass
+        """ Returns the diagonal of the matrix. """
+        if len(self) == 0:
+            raise ValueError("diagonal() matrix not square")
+        pos_min, pos_max = self.dim()
+
+        if pos_max[0]-pos_min[0] != pos_max[1]-pos_min[1]:
+            raise ValueError("diagonal() matrix not square")
+        diagonal = MatrixSparseDOK()
+        while pos_max != pos_min:
+            diagonal[pos_min] = self[pos_min]
+            pos_min = Position(pos_min[0]+1, pos_min[1]+1)
+
+        diagonal[pos_min] = self[pos_min]
+        return diagonal
 
     @staticmethod
     def eye(size: int, unitary: float = 1.0, zero: float = 0.0) -> MatrixSparseDOK:
