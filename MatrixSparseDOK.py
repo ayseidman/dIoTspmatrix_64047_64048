@@ -81,7 +81,13 @@ class MatrixSparseDOK(MatrixSparse):
         return len(self._items)
 
     def _add_number(self, other: [int, float]) -> Matrix:
-        pass
+        if not isinstance(other, (int, float)):
+            raise ValueError("_add_number() invalid arguments")
+        number_added_matrix = self.__copy__()
+        for pos in number_added_matrix:
+            number_added_matrix[pos] += other
+
+        return number_added_matrix
 
     def _add_matrix(self, other: MatrixSparse) -> MatrixSparse:
         pass
