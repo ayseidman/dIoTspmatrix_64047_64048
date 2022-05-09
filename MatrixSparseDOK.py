@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+import sys
+
 from MatrixSparse import *
 from Position import *
 
@@ -20,8 +23,9 @@ class MatrixSparseDOK(MatrixSparse):
     @MatrixSparse.zero.setter
     def zero(self, val: float):
         """ Overriding the zero.setter of parent class to delete the new zero valued items. """
+        # Invoking parent's zero setter
         super(MatrixSparseDOK, self.__class__).zero.fset(self, val)
-
+        # Deleting the redundant elements that equals new zero value
         self._items = {position:value for position, value in self._items.items() if value != self.zero}
 
     def __copy__(self):
@@ -90,14 +94,36 @@ class MatrixSparseDOK(MatrixSparse):
 
     def dim(self) -> tuple[Position, ...]:
         """ :return dim = Position(min_row, min_col), Position(max_row, max_col)"""
-        # Implement For
-        pass
+        if len(self) == 0:
+            return ()
+        min_row, min_col, max_row, max_col = sys.maxsize, sys.maxsize, -1, -1
+        for position, value in self._items.items():
+            min_row = position[0] if position[0] < min_row else min_row
+            min_col = position[1] if position[1] < min_col else min_col
+            max_row = position[0] if position[0] > max_row else max_row
+            max_col = position[1] if position[1] > max_col else max_col
+
+        return Position(min_row, min_col), Position(max_row, max_col)
 
     def row(self, row: int) -> Matrix:
-        pass
+        """ Creates a matrix with only given row """
+        if not isinstance(row, int):
+            raise ValueError("row() invalid arguments")
+        rowMatrix = MatrixSparseDOK(self.zero)
+        for position, value in self._items.items():
+            if position[0] == row:
+                rowMatrix[position] = value
+        return rowMatrix
 
     def col(self, col: int) -> Matrix:
-        pass
+        """ Creates a matrix with only given column """
+        if not isinstance(col, int):
+            raise ValueError("col() invalid arguments")
+        colMatrix = MatrixSparseDOK(self.zero)
+        for position, value in self._items.items():
+            if position[1] == col:
+                colMatrix[position] = value
+        return colMatrix
 
     def diagonal(self) -> Matrix:
         pass

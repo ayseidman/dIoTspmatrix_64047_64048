@@ -29,7 +29,12 @@ class MatrixSparse(Matrix):
         raise NotImplementedError
 
     def sparsity(self) -> float:
-        pass
+        """ Calculates sparsity by dividing the # of non-zero elements to all elements(dimension) """
+        if len(self) == 0:
+            return 1.0
+        pos_min, pos_max = self.dim()
+        num_of_elements = (pos_max[0]-pos_min[0]+1)*(pos_max[1]-pos_min[1]+1)
+        return (num_of_elements-len(self))/num_of_elements
 
     @staticmethod
     @abstractmethod

@@ -60,7 +60,19 @@ class Matrix(ABC):
         raise NotImplementedError
 
     def __str__(self):
-        pass
+        if len(self) == 0:
+            return ""
+        pos_min, pos_max = self.dim()
+        str_matrix = ""
+        for row in range(pos_min[0], pos_max[0] + 1):
+            for col in range(pos_min[1], pos_max[1]+1):
+                value = self[row, col]
+                str_matrix += f"{value:.1f} " if value != 0 else "0 "
+            str_matrix = str_matrix[:-1]
+            str_matrix += "\n"
+
+        str_matrix = str_matrix[:-1]
+        return str_matrix
 
     @abstractmethod
     def dim(self) -> tuple[Position, ...]:
