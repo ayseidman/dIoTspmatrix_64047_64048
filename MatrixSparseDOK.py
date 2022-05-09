@@ -81,6 +81,7 @@ class MatrixSparseDOK(MatrixSparse):
         return len(self._items)
 
     def _add_number(self, other: [int, float]) -> Matrix:
+        """ Adds a number to sparse matrix."""
         if not isinstance(other, (int, float)):
             raise ValueError("_add_number() invalid arguments")
         number_added_matrix = self.__copy__()
@@ -90,7 +91,28 @@ class MatrixSparseDOK(MatrixSparse):
         return number_added_matrix
 
     def _add_matrix(self, other: MatrixSparse) -> MatrixSparse:
-        pass
+        """ Adds two matrices."""
+        if not isinstance(other, MatrixSparse):
+            raise ValueError("_add_matrix() incompatible matrices")
+
+        pos_min_self, pos_max_self = self.dim()
+        pos_min_other, pos_max_other = other.dim()
+        num_row_self = pos_max_self[0] - pos_min_self[0]
+        num_col_self = pos_max_self[1] - pos_min_self[1]
+        num_row_other = pos_max_other[0] - pos_min_other[0]
+        num_col_other = pos_max_other[1] - pos_min_other[1]
+
+        if self.zero != other.zero or num_row_self != num_row_other or num_col_self != num_col_other:
+            raise ValueError("_add_matrix() incompatible matrices")
+
+        matrix_added_matrix = self.__copy__()
+        for pos in other:
+            if matrix_added_matrix[pos] != matrix_added_matrix.zero:
+                matrix_added_matrix[pos] += other[pos]
+            else:
+                matrix_added_matrix[pos] = other[pos]
+
+        return matrix_added_matrix
 
     def _mul_number(self, other: [int, float]) -> Matrix:
         pass
