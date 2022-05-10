@@ -67,7 +67,7 @@ class Matrix(ABC):
         for row in range(pos_min[0], pos_max[0] + 1):
             for col in range(pos_min[1], pos_max[1]+1):
                 value = self[row, col]
-                str_matrix += f"{value:.1f} " if value != 0 else "0 "
+                str_matrix += f"{value:.2g} " if value != 0 else "0 "
             str_matrix = str_matrix[:-1]
             str_matrix += "\n"
 
