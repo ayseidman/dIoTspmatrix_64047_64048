@@ -115,10 +115,39 @@ class MatrixSparseDOK(MatrixSparse):
         return matrix_added_matrix
 
     def _mul_number(self, other: [int, float]) -> Matrix:
-        pass
+        """ Multiplies a number and a sparse matrix."""
+        if not isinstance(other, (int, float)):
+            raise ValueError("_mul_number() invalid arguments")
+        number_muled_matrix = self.__copy__()
+        for pos in number_muled_matrix:
+            number_muled_matrix[pos] *= other
+
+        return number_muled_matrix
 
     def _mul_matrix(self, other: MatrixSparse) -> MatrixSparse:
-        pass
+        """ Multiplies two matrices."""
+        if not isinstance(other, MatrixSparse):
+            raise ValueError("_mul_matrix() incompatible matrices")
+
+        pos_min_self, pos_max_self = self.dim()
+        pos_min_other, pos_max_other = other.dim()
+        num_col_self = pos_max_self[1] - pos_min_self[1] + 1
+        num_row_other = pos_max_other[0] - pos_min_other[0] + 1
+        num_col_other = pos_max_other[1] - pos_min_other[1] + 1
+
+        if self.zero != other.zero or num_col_self != num_row_other:
+            raise ValueError("_mul_matrix() incompatible matrices")
+
+        matrix_muled_matrix = MatrixSparseDOK()
+        for pos in self:
+            col = pos[1]-pos_min_self[1]
+
+            for i in range(num_col_other):
+                if other[col + pos_min_other[0], i + pos_min_other[1]] != other.zero:
+                    matrix_muled_matrix[pos[0], i + pos_min_other[1]] += self[pos]*other[col + pos_min_other[0], i + pos_min_other[1]]
+
+        matrix_muled_matrix.zero = self.zero
+        return matrix_muled_matrix
 
     def dim(self) -> tuple[Position, ...]:
         """ :return dim = Position(min_row, min_col), Position(max_row, max_col)"""
