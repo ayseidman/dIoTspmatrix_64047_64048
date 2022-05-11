@@ -200,10 +200,28 @@ class MatrixSparseDOK(MatrixSparse):
 
     @staticmethod
     def eye(size: int, unitary: float = 1.0, zero: float = 0.0) -> MatrixSparseDOK:
-        pass
+        if not isinstance(size, int):
+            raise ValueError("eye() invalid parameters")
+        elif size < 0:
+            raise ValueError("eye() invalid parameters")
+
+        if not (isinstance(unitary, (int, float)) and isinstance(zero, (int, float))):
+            raise ValueError("eye() invalid parameters")
+
+        eye_matrix = MatrixSparseDOK(zero)
+        for i in range(size):
+            eye_matrix[i, i] = unitary
+
+        return eye_matrix
 
     def transpose(self) -> MatrixSparseDOK:
-        pass
+        transpose_matrix = self.__copy__()
+        for pos in transpose_matrix:
+            temp_value = self[pos]
+            transpose_matrix[pos] = self[pos[1], pos[0]]
+            transpose_matrix[pos[1], pos[0]] = temp_value
+
+        return transpose_matrix
 
     def compress(self) -> compressed:
         pass
