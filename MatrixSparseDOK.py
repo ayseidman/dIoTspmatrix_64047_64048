@@ -224,7 +224,78 @@ class MatrixSparseDOK(MatrixSparse):
         return transpose_matrix
 
     def compress(self) -> compressed:
-        pass
+        if self.sparsity() < 0.5:
+            raise ValueError("compress() dense matrix")
+
+        pos_min_self, pos_max_self = self.dim()
+        num_row_self = pos_max_self[0] - pos_min_self[0] + 1
+        num_col_self = pos_max_self[1] - pos_min_self[1] + 1
+        min_col_self = pos_min_self[1]
+
+        values = MatrixSparseDOK(self.zero)
+        indexes = MatrixSparseDOK(self.zero)
+        offsets = [0] * num_row_self
+
+        row_list = []
+
+        for i in range(pos_min_self[0], num_row_self+pos_min_self[0]):
+            current_row = self.row(i)
+
+            if len(current_row) != 0:
+                pos_min, pos_max = current_row.dim()
+                row_list.append((len(current_row), i, current_row, pos_min, pos_max))
+
+        row_list = sorted(row_list, key=lambda element: (element[0], pos_max_self[0] - element[1]), reverse=True)
+        # Add first row directly to the values, indexes and offsets.
+        first_row = row_list[0]
+        for pos in first_row[2]:
+            values[0, pos[1]-first_row[3][1]] = first_row[2][pos]
+            indexes[0, pos[1]-first_row[3][1]] = first_row[1]
+
+        offsets[first_row[1] - pos_min_self[0]] = min_col_self - first_row[3][1]
+
+        for density, row_num, row, pos_min, pos_max in row_list[1:]:
+            """ Add rows -except for the first one- to values list. """
+            max_pos_in_values = values.dim()[1][1]
+            # For loop for values to find available value.
+            for idx_values in range(max_pos_in_values + 2):
+                shift_required = False
+                # For loop for row to be inserted.
+                for pos in row:
+                    idx_row = pos[1] - pos_min[1] # Normalize position
+                    idx_row += idx_values
+                    if values[0, idx_row] != self.zero:
+                        shift_required = True
+                        break
+
+                if shift_required:
+                    # Could not find available position, check next position.
+                    continue
+
+                # Match found. Insert this row to available space.
+                for pos in row:
+                    idx_row = pos[1] - pos_min[1] # Normalize position
+                    idx_row += idx_values
+                    values[0, idx_row] = row[pos]
+                    indexes[0, idx_row] = row_num
+
+                offsets[row_num - pos_min_self[0]] = min_col_self - pos_min[1] + idx_values
+                # Insertion done. Continue to next row.
+                break
+
+
+
+        min_pos_values, max_pos_values = values.dim()
+        values_tuple = ()
+        indexes_tuple = ()
+
+        for index in range(max_pos_values[1]+1):
+            values_tuple += (values[0,index], )
+            indexes_tuple += (indexes[0,index], )
+
+        offsets_tuple = tuple(offsets)
+
+        return (pos_min_self[0], pos_min_self[1]), self.zero, values_tuple, indexes_tuple, offsets_tuple
 
     @staticmethod
     def doi(compressed_vector: compressed, pos: Position) -> float:
