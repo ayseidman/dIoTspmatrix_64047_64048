@@ -298,18 +298,14 @@ class MatrixSparseDOK(MatrixSparse):
 
     @staticmethod
     def doi(compressed_vector: compressed, pos: Position) -> float:
+        """ Returns the value of the given position by checking compressed matrix. """
         # Checking Parameters
-        if not (isinstance(compressed_vector, tuple) and isinstance(pos, Position)):
-            raise ValueError("doi() invalid parameters")
-        if len(compressed_vector) != 5:
+        if not isinstance(pos, Position):
             raise ValueError("doi() invalid parameters")
 
-        types = [tuple, (float, int), tuple, tuple, tuple]
-        for idx, item in enumerate(compressed_vector):
-            if not isinstance(item, types[idx]):
-                raise ValueError("doi() invalid parameters")
-
-        if not (len(compressed_vector[0]) == 2 and len(compressed_vector[2]) == len(compressed_vector[3])):
+        try:
+            MatrixSparseDOK._check_compressed(compressed_vector)
+        except ValueError:
             raise ValueError("doi() invalid parameters")
 
         # All the checks completed.
@@ -337,7 +333,40 @@ class MatrixSparseDOK(MatrixSparse):
 
     @staticmethod
     def decompress(compressed_vector: compressed) -> MatrixSparse:
-        pass
+        """ Decompress the compressed vector. """
+        # Checking Parameters
+        try:
+            MatrixSparseDOK._check_compressed(compressed_vector)
+        except ValueError:
+            raise ValueError("decompress() invalid parameters")
+
+        # All the checks completed.
+        upper_left_position, zero, values, indexes, offsets = compressed_vector
+        min_row, min_col = upper_left_position
+
+        decompressed = MatrixSparseDOK(zero)
+        for i, (value, index) in enumerate(zip(values, indexes)):
+            if index == -1:
+                continue
+            decompressed[index, i-offsets[index - min_row] + min_col] = value
+
+        return decompressed
+
+    @staticmethod
+    def _check_compressed(compressed_vector: compressed):
+        """ Checking if the compressed_vector is valid. """
+        if not isinstance(compressed_vector, tuple):
+            raise ValueError("compressed_vector is invalid")
+        if len(compressed_vector) != 5:
+            raise ValueError("compressed_vector is invalid")
+
+        types = [tuple, (float, int), tuple, tuple, tuple]
+        for idx, item in enumerate(compressed_vector):
+            if not isinstance(item, types[idx]):
+                raise ValueError("compressed_vector is invalid")
+
+        if not (len(compressed_vector[0]) == 2 and len(compressed_vector[2]) == len(compressed_vector[3])):
+            raise ValueError("compressed_vector is invalid")
 
     def _check_pos(self, pos):
         """
