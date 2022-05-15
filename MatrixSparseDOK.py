@@ -162,7 +162,7 @@ class MatrixSparseDOK(MatrixSparse):
 
         return Position(min_row, min_col), Position(max_row, max_col)
 
-    def row(self, row: int) -> Matrix:
+    def row(self, row: int) -> MatrixSparseDOK:
         """ Creates a matrix with only given row """
         if not isinstance(row, int):
             raise ValueError("row() invalid arguments")
@@ -283,8 +283,7 @@ class MatrixSparseDOK(MatrixSparse):
                 # Insertion done. Continue to next row.
                 break
 
-
-
+        # Converting values, indexes, and offsets to tuple
         min_pos_values, max_pos_values = values.dim()
         values_tuple = ()
         indexes_tuple = ()
@@ -299,7 +298,42 @@ class MatrixSparseDOK(MatrixSparse):
 
     @staticmethod
     def doi(compressed_vector: compressed, pos: Position) -> float:
-        pass
+        # Checking Parameters
+        if not (isinstance(compressed_vector, tuple) and isinstance(pos, Position)):
+            raise ValueError("doi() invalid parameters")
+        if len(compressed_vector) != 5:
+            raise ValueError("doi() invalid parameters")
+
+        types = [tuple, (float, int), tuple, tuple, tuple]
+        for idx, item in enumerate(compressed_vector):
+            if not isinstance(item, types[idx]):
+                raise ValueError("doi() invalid parameters")
+
+        if not (len(compressed_vector[0]) == 2 and len(compressed_vector[2]) == len(compressed_vector[3])):
+            raise ValueError("doi() invalid parameters")
+
+        # All the checks completed.
+        upper_left_position, zero, values, indexes, offsets = compressed_vector
+        min_row, min_col = upper_left_position
+        row, col = pos[0], pos[1]
+
+        offsets_idx = row - min_row
+        # Checking if offset exists
+        if len(offsets) <= offsets_idx or offsets_idx < 0:
+            return zero
+
+        offset = offsets[offsets_idx]
+        # Checking if index exists
+        indexes_idx = col + offset - min_col
+        if len(indexes) <= indexes_idx or indexes_idx < 0:
+            return zero
+
+        index = indexes[indexes_idx]
+
+        if index != row:
+            return zero
+
+        return values[indexes_idx]
 
     @staticmethod
     def decompress(compressed_vector: compressed) -> MatrixSparse:
