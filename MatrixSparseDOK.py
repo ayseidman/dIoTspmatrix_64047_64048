@@ -13,6 +13,10 @@ class MatrixSparseDOK(MatrixSparse):
     _items = spmatrix
 
     def __init__(self, zero: float = 0.0):
+        """
+        Initializes a sparse matrix DOK instance.
+        :param zero: zero value of the sparse matrix
+        """
         self._items = MatrixSparseDOK._items({})
         # invoking the __init__ of the parent class
         try:
@@ -29,30 +33,35 @@ class MatrixSparseDOK(MatrixSparse):
         self._items = {position:value for position, value in self._items.items() if value != self.zero}
 
     def __copy__(self):
+        """ Deep copies the sparse matrix. """
         replica = MatrixSparseDOK(self.zero)
-        for position, value in self._items.items():
-            replica[position] = value
+        for pos, value in self._items.items():
+            replica[pos] = value
         return replica
 
     def __eq__(self, other: MatrixSparseDOK):
+        """ Checks id two sparse matrices are equal. """
         if not isinstance(other, MatrixSparseDOK):
             return False
         return (self.zero == other.zero) and (self._items == other._items)
 
     def __iter__(self):
+        """ Sorts the self._items to be used as iterator.  """
         self._index = -1
         self._items_sorted = sorted(self._items.keys(), key=lambda pos: (pos[0], pos[1]))
         return self
 
     def __next__(self):
+        """ Returns the next item in iterable object. """
         self._index += 1
         if self._index == len(self):
             raise StopIteration
         return self._items_sorted[self._index]
 
     def __getitem__(self, pos: [Position, position]) -> float:
+        """ Gets the item at given position in sparse matrix. """
         try:
-            pos = self._check_pos(pos)
+            pos = MatrixSparseDOK._check_pos(pos)
         except ValueError:
             raise ValueError("__getitem__() invalid arguments")
 
@@ -62,8 +71,9 @@ class MatrixSparseDOK(MatrixSparse):
             return self.zero
 
     def __setitem__(self, pos: [Position, position], val: [int, float]):
+        """ Sets the item at given position in sparse matrix. """
         try:
-            pos = self._check_pos(pos)
+            pos = MatrixSparseDOK._check_pos(pos)
         except ValueError:
             raise ValueError("__setitem__() invalid arguments")
 
@@ -200,6 +210,13 @@ class MatrixSparseDOK(MatrixSparse):
 
     @staticmethod
     def eye(size: int, unitary: float = 1.0, zero: float = 0.0) -> MatrixSparseDOK:
+        """
+        Creates identity matrix of sparse matrix.
+        :param size: size of the identity matrix
+        :param unitary: diagonal value of the identity matrix
+        :param zero: zero of the identity matrix
+        :return: identity matrix
+        """
         if not isinstance(size, int):
             raise ValueError("eye() invalid parameters")
         elif size < 0:
@@ -215,6 +232,7 @@ class MatrixSparseDOK(MatrixSparse):
         return eye_matrix
 
     def transpose(self) -> MatrixSparseDOK:
+        """ Takes transpose of the sparse matrix. """
         transpose_matrix = self.__copy__()
         for pos in transpose_matrix:
             temp_value = self[pos]
@@ -224,12 +242,15 @@ class MatrixSparseDOK(MatrixSparse):
         return transpose_matrix
 
     def compress(self) -> compressed:
+        """
+        Compresses the sparse matrix.
+        :return: compressed matrix
+        """
         if self.sparsity() < 0.5:
             raise ValueError("compress() dense matrix")
 
         pos_min_self, pos_max_self = self.dim()
         num_row_self = pos_max_self[0] - pos_min_self[0] + 1
-        num_col_self = pos_max_self[1] - pos_min_self[1] + 1
         min_col_self = pos_min_self[1]
 
         values = MatrixSparseDOK(self.zero)
@@ -246,6 +267,7 @@ class MatrixSparseDOK(MatrixSparse):
                 row_list.append((len(current_row), i, current_row, pos_min, pos_max))
 
         row_list = sorted(row_list, key=lambda element: (element[0], pos_max_self[0] - element[1]), reverse=True)
+
         # Add first row directly to the values, indexes and offsets.
         first_row = row_list[0]
         for pos in first_row[2]:
@@ -260,6 +282,7 @@ class MatrixSparseDOK(MatrixSparse):
             # For loop for values to find available value.
             for idx_values in range(max_pos_in_values + 2):
                 shift_required = False
+
                 # For loop for row to be inserted.
                 for pos in row:
                     idx_row = pos[1] - pos_min[1] # Normalize position
@@ -368,7 +391,8 @@ class MatrixSparseDOK(MatrixSparse):
         if not (len(compressed_vector[0]) == 2 and len(compressed_vector[2]) == len(compressed_vector[3])):
             raise ValueError("compressed_vector is invalid")
 
-    def _check_pos(self, pos):
+    @staticmethod
+    def _check_pos(pos):
         """
         Checks whether the position entered by user is valid or not.
         :param pos: Position object or tuple
