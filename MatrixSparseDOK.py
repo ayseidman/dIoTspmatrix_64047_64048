@@ -233,7 +233,7 @@ class MatrixSparseDOK(MatrixSparse):
         min_col_self = pos_min_self[1]
 
         values = MatrixSparseDOK(self.zero)
-        indexes = MatrixSparseDOK(self.zero)
+        indexes = MatrixSparseDOK(-1)
         offsets = [0] * num_row_self
 
         row_list = []
