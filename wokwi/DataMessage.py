@@ -3,6 +3,7 @@ from MQTT import MQTT
 from ast import literal_eval
 from LogTime import LogTime
 
+
 class DataMessage(Message):
 
     def __init__(self, message):

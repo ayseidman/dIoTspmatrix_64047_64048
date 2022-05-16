@@ -16,7 +16,6 @@ class Message:
         if message is not None:
             self.body = message
 
-
     @property
     def body(self) -> dict:
         """ Python getter for zero """
