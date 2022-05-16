@@ -12,7 +12,10 @@ class Message:
     CLIENT_ID = None
 
     def __init__(self, message):
-        self.body = message
+        self._body = None
+        if message is not None:
+            self.body = message
+
 
     @property
     def body(self) -> dict:

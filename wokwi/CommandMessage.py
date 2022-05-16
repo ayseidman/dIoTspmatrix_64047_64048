@@ -3,7 +3,7 @@ from Message import Message, MessageDestinationError
 
 class CommandMessage(Message):
 
-    def __init__(self, message):
+    def __init__(self, message=None, cmd_type=None, day=None, hour=None, minute=None, destination_node_id=None, source_node_id=None, message_id=None):
         super().__init__(message)
         self._type = None
         self._day = None
@@ -12,7 +12,10 @@ class CommandMessage(Message):
         self._destination_node_id = None
         self._source_node_id = None
         self._message_id = None
-        self._cmd_parse()
+        if message is not None:
+            self._cmd_parse()
+        else:
+            self._cmd_serialize(cmd_type, day, hour, minute, destination_node_id, source_node_id, message_id)
 
     def _cmd_parse(self):
         self._validate()
@@ -21,6 +24,19 @@ class CommandMessage(Message):
         self.destination_node_id = self.body["node_to"]
         self.source_node_id = self.body["node_from"]
         self.message_id = self.body["msg_id"]
+
+    def _cmd_serialize(self, cmd_type, day, hour, minute, destination_node_id, source_node_id, message_id):
+        self.type = cmd_type
+        self.day = day
+        if hour is not None:
+            self.hour = hour
+
+        if minute is not None:
+            self.minute = minute
+
+        self.destination_node_id = destination_node_id
+        self.source_node_id = source_node_id
+        self.message_id = message_id
 
     @property
     def type(self) -> str:
@@ -34,9 +50,9 @@ class CommandMessage(Message):
         if value == "GET-NODE-LOG-FULL":
             pass
         elif value == "GET-NODE-LOG-BY-HOUR" and hour_found:
-            pass
+            self.hour = self.body["hour"]
         elif value == "GET-NODE-LOG-BY-MINUTE" and minute_found:
-            pass
+            self.minute = self.body["minute"]
         elif value == "GET-ALL-LOG-FULL":
             pass
         else:
