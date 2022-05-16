@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": -65.85,
+      "left": 0,
+      "rotate": 90,
+      "attrs": {}
+    },
+    { "type": "board-ssd1306", "id": "oled1", "top": -11.2, "left": 184.17, "attrs": {} },
+    {
+      "type": "wokwi-pir-motion-sensor",
+      "id": "pir1",
+      "top": 99.87,
+      "left": 16.77,
+      "rotate": 180,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-microsd-card",
+      "id": "sd1",
+      "top": -118.41,
+      "left": 23.2,
+      "rotate": 90,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    [ "esp:TX0", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX0", "$serialMonitor:TX", "", [] ],
+    [ "oled1:GND", "sd1:GND", "black", [ "v-17.82", "h-142.46" ] ],
+    [ "esp:GND.1", "pir1:GND", "black", [ "v0" ] ],
+    [ "sd1:GND", "esp:GND.2", "black", [ "v9.41", "h-73.45" ] ],
+    [ "pir1:VCC", "esp:3V3", "red", [ "v-7.05", "h-71.25" ] ],
+    [ "sd1:VCC", "oled1:VCC", "red", [ "v12.56", "h169.3" ] ],
+    [ "oled1:VCC", "pir1:VCC", "red", [ "v-15.55", "h-67.22", "v120.6" ] ],
+    [ "oled1:SDA", "esp:D21", "limegreen", [ "v-18.97", "h45.88", "v119.06", "h-201.77" ] ],
+    [ "oled1:SCL", "esp:D22", "green", [ "v-8.96", "h-72.83", "v114.32", "h-45.83" ] ],
+    [ "sd1:CS", "esp:D5", "cyan", [ "v18.82", "h-96.44", "v117.55", "h124.25" ] ],
+    [ "sd1:DI", "esp:D23", "purple", [ "v23.15", "h104.68", "v105.97" ] ],
+    [ "sd1:DO", "esp:D19", "magenta", [ "v0" ] ],
+    [ "sd1:SCK", "esp:D18", "violet", [ "v53.43", "h1.67" ] ],
+    [ "pir1:OUT", "esp:D4", "blue", [ "v-3.48", "h-24.45" ] ]
+  ]
+}
