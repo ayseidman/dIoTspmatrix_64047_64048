@@ -11,14 +11,14 @@ class Message:
 
     CLIENT_ID = None
 
-    def __init__(self, message):
-        self._body = None
+    def __init__(self, message = None):
+        self._body = {}
         if message is not None:
             self.body = message
 
     @property
     def body(self) -> dict:
-        """ Python getter for zero """
+        """ Python getter for body """
         return self._body
 
     @body.setter
@@ -27,16 +27,19 @@ class Message:
         if not isinstance(message, str):
             raise ValueError("Wrong Message Format!")
 
-        message_json = Message._parse_json(message)
+        message_dict = Message._parse_json(message)
 
-        if "cmd" not in message_json:
+        if "cmd" not in message_dict:
             raise ValueError("Wrong Message Format!")
 
-        self._body = message_json
+        self._body = message_dict
 
     @staticmethod
     def _parse_json(message: str) -> dict:
         """ Parsing JSON messages coming from interface. """
-        json_dict = loads(message)
-        return json_dict
+        message_dict = loads(message)
+        return message_dict
+
+    def __str__(self):
+        return dumps(self._body)
 
