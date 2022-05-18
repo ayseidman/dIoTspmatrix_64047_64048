@@ -1,10 +1,14 @@
 class LogTime:
 
-    def __init__(self, time_string):
+    def __init__(self, time_string=None, hour=0, minute=0):
         self._time = None
-        self.hour = None
-        self.minute = None
-        self.time = time_string
+        self._hour = None
+        self._minute = None
+        if time_string is not None:
+            self.time = time_string
+        else:
+            self.hour = hour
+            self.minute = minute
 
     @property
     def time(self):
@@ -20,19 +24,40 @@ class LogTime:
         if len(splited_str) != 2:
             raise ValueError("LogTime format error!")
 
-        hour = splited_str[0]
-        minute = splited_str[1]
+        self.hour = splited_str[0]
+        self.minute = splited_str[1]
 
-        if not (hour.isnumeric() and minute.isnumeric()):
+    @property
+    def hour(self):
+        return self._hour
+
+    @hour.setter
+    def hour(self, value):
+        try:
+            value_int = int(value)
+        except ValueError:
             raise ValueError("LogTime format error!")
-        hour = int(hour)
-        minute = int(minute)
 
-        if not (0 <= hour <= 23 and 0 <= minute <= 59):
+        if not (0 <= value_int <= 23):
             raise ValueError("LogTime format error!")
 
-        self.hour = hour
-        self.minute = minute
+        self._hour = value_int
+
+    @property
+    def minute(self):
+        return self._minute
+
+    @minute.setter
+    def minute(self, value):
+        try:
+            value_int = int(value)
+        except ValueError:
+            raise ValueError("LogTime format error!")
+
+        if not (0 <= value_int <= 59):
+            raise ValueError("LogTime format error!")
+
+        self._minute = value_int
 
     def __str__(self):
-        return f"{self.hour}:{self.minute}"
+        return f"{self.hour:02}:{self.minute:02}"
