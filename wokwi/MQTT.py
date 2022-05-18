@@ -34,6 +34,11 @@ class MQTT(CommunicationInterface, MQTTClient):
         CommunicationInterface.disconnect(self)
         MQTTClient.disconnect(self)
 
+    def run(self):
+        #MQTTClient.wait_msg(self)
+        while 1:
+            MQTTClient.check_msg(self)
+
     def set_callback(self, handle_cmd, handle_data, handle_net):
         self._handle_cmd = handle_cmd
         self._handle_data = handle_data
@@ -52,7 +57,7 @@ class MQTT(CommunicationInterface, MQTTClient):
     def _callback(self, topic, message):
         topic = topic.decode("utf-8")
         message = message.decode("utf-8")
-
+        print(message)
         if topic == MQTT.TOPIC_CMD:
             self._handle_cmd(message)
         elif topic == MQTT.TOPIC_DATA:
@@ -62,3 +67,22 @@ class MQTT(CommunicationInterface, MQTTClient):
         else:
             raise ValueError(
                 "Wrong Topic Message: can only be {}, {} or {}".format(MQTT.TOPIC_CMD, MQTT.TOPIC_DATA, MQTT.TOPIC_NET))
+
+    def send_data(self, message):
+        if not isinstance(message, str):
+            raise "Message must be string"
+        message = message.encode()
+        MQTTClient.publish(self, MQTT.TOPIC_DATA, message)
+
+    def send_command(self, message):
+        if not isinstance(message, str):
+            raise "Message must be string"
+        message = message.encode()
+        MQTTClient.publish(self, MQTT.TOPIC_CMD, message)
+
+    def send_network_info(self, message: str):
+        if not isinstance(message, str):
+            raise "Message must be string"
+        message = message.encode()
+        MQTTClient.publish(self, MQTT.TOPIC_NET, message)
+        
