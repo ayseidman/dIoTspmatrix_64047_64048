@@ -3,19 +3,19 @@ from Message import Message, MessageDestinationError
 
 class CommandMessage(Message):
 
-    def __init__(self, message=None, cmd=None, day=None, hour=None, minute=None, destination_node_id=None, source_node_id=None, message_id=None):
+    def __init__(self, message=None, cmd=None, day=0, hour=0, minute=0, destination_node_id=None, source_node_id=Message.CLIENT_ID, message_id=None):
         super().__init__(message)
         self._cmd = None
         self._day = None
         self._hour = None
         self._minute = None
         self._destination_node_id = None
-        self._source_node_id = None
+
         self._message_id = None
         if message is not None:
             self._parse()
         else:
-            self._serialize(cmd, str(day), str(hour), str(minute), destination_node_id, source_node_id, message_id)
+            self._serialize(cmd, day, hour, minute, destination_node_id, source_node_id, message_id)
 
     def _parse(self):
         self._validate()
@@ -23,14 +23,15 @@ class CommandMessage(Message):
         self.day = self.body["day"]
 
         self.destination_node_id = self.body["node_to"]
-        self.source_node_id = self.body["node_from"]
         self.message_id = self.body["msg_id"]
 
     def _serialize(self, cmd, day, hour, minute, destination_node_id, source_node_id, message_id):
         if hour is not None:
+            self.hour = hour
             self.body["hour"] = hour
 
         if minute is not None:
+            self.minute = minute
             self.body["minute"] = minute
 
         self.cmd = cmd
@@ -39,7 +40,11 @@ class CommandMessage(Message):
         self.day = day
         self.body["day"] = day
 
-        self.destination_node_id = destination_node_id
+        try:
+            self.destination_node_id = destination_node_id
+        except MessageDestinationError:
+            self._destination_node_id = destination_node_id
+
         self.body["node_to"] = destination_node_id
 
         self.source_node_id = source_node_id
@@ -75,47 +80,41 @@ class CommandMessage(Message):
         return self._day
 
     @day.setter
-    def day(self, value: str):
-        try:
-            int_value = int(value)
-        except ValueError:
+    def day(self, value: int):
+        if not isinstance(value, int):
             raise ValueError("Wrong Day Format!")
 
-        if int_value > 0:
+        if value > 0:
             raise ValueError("Wrong Day Format!")
-        self._day = int_value
+        self._day = value
 
     @property
     def hour(self) -> int:
         return self._hour
 
     @hour.setter
-    def hour(self, value: str):
-        try:
-            int_value = int(value)
-        except ValueError:
+    def hour(self, value: int):
+        if not isinstance(value, int):
             raise ValueError("Wrong Hour Format!")
 
-        if int_value < 0 or int_value > 23:
+        if value < 0 or value > 23:
             raise ValueError("Wrong Hour Format!")
 
-        self._hour = int_value
+        self._hour = value
 
     @property
     def minute(self) -> int:
         return self._minute
 
     @minute.setter
-    def minute(self, value: str):
-        try:
-            int_value = int(value)
-        except ValueError:
+    def minute(self, value: int):
+        if not isinstance(value, int):
+            raise ValueError("Wrong Hour Format!")
+
+        if value < 0 or value > 59:
             raise ValueError("Wrong Minute Format!")
 
-        if int_value < 0 or int_value > 59:
-            raise ValueError("Wrong Minute Format!")
-
-        self._minute = int_value
+        self._minute = value
 
     @property
     def destination_node_id(self) -> str:
@@ -123,6 +122,9 @@ class CommandMessage(Message):
 
     @destination_node_id.setter
     def destination_node_id(self, value: str):
+        if not isinstance(value,str):
+            ValueError("Wrong Command Format!")
+
         if value not in ["ANY", Message.CLIENT_ID]:
             raise MessageDestinationError()
         self._destination_node_id = value
