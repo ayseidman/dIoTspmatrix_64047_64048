@@ -1,12 +1,11 @@
 from Message import Message, MessageDestinationError
 from MQTT import MQTT
-from ast import literal_eval
 from LogTime import LogTime
 
 
 class DataMessage(Message):
 
-    def __init__(self, message=None, cmd=None, data=None, log_time=None, destination_node_id=None, source_node_id=None, message_id=None):
+    def __init__(self, message=None, cmd=None, data=[], log_time=None, destination_node_id=None, source_node_id=None, message_id=None):
         super().__init__(message)
         self._cmd = None
         self._data = None
@@ -18,7 +17,7 @@ class DataMessage(Message):
         if message is not None:
             self._parse()
         else:
-            self._serialize(cmd, str(data), log_time, destination_node_id, source_node_id, message_id)
+            self._serialize(cmd, data, log_time, destination_node_id, source_node_id, message_id)
 
     def _parse(self):
         self._validate()
@@ -26,7 +25,6 @@ class DataMessage(Message):
         self.data = self.body["data"]
         self.log_time = self.body["log_time"]
         self.destination_node_id = self.body["node_to"]
-        self.source_node_id = self.body["node_from"]
         self.message_id = self.body["msg_id"]
 
     def _serialize(self, cmd, data, log_time, destination_node_id, source_node_id, message_id):
@@ -54,6 +52,9 @@ class DataMessage(Message):
 
     @cmd.setter
     def cmd(self, value: str):
+        if not isinstance(value, str):
+            raise ValueError("Wrong Command Format!")
+
         if value == "GET-NODE-LOG-FULL":
             pass
         elif value == "GET-NODE-LOG-BY-HOUR":
@@ -73,9 +74,7 @@ class DataMessage(Message):
 
     @data.setter
     def data(self, value: str):
-        try:
-            value = literal_eval(value)
-        except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+        if not isinstance(value,list):
             raise ValueError("Wrong Data Format!")
 
         self._data = value
