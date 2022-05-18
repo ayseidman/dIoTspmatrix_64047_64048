@@ -13,11 +13,11 @@ class CommandMessage(Message):
         self._source_node_id = None
         self._message_id = None
         if message is not None:
-            self._cmd_parse()
+            self._parse()
         else:
-            self._cmd_serialize(cmd, str(day), str(hour), str(minute), destination_node_id, source_node_id, message_id)
+            self._serialize(cmd, str(day), str(hour), str(minute), destination_node_id, source_node_id, message_id)
 
-    def _cmd_parse(self):
+    def _parse(self):
         self._validate()
         self.cmd = self.body["cmd"]
         self.day = self.body["day"]
@@ -26,7 +26,7 @@ class CommandMessage(Message):
         self.source_node_id = self.body["node_from"]
         self.message_id = self.body["msg_id"]
 
-    def _cmd_serialize(self, cmd, day, hour, minute, destination_node_id, source_node_id, message_id):
+    def _serialize(self, cmd, day, hour, minute, destination_node_id, source_node_id, message_id):
         if hour is not None:
             self.body["hour"] = hour
 

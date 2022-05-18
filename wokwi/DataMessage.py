@@ -6,32 +6,54 @@ from LogTime import LogTime
 
 class DataMessage(Message):
 
-    def __init__(self, message):
+    def __init__(self, message=None, cmd=None, data=None, log_time=None, destination_node_id=None, source_node_id=None, message_id=None):
         super().__init__(message)
-        self._type = None
+        self._cmd = None
         self._data = None
         self._log_time = None
         self._destination_node_id = None
         self._source_node_id = None
         self._message_id = None
 
-        self._cmd_parse()
+        if message is not None:
+            self._parse()
+        else:
+            self._serialize(cmd, str(data), log_time, destination_node_id, source_node_id, message_id)
 
-    def _cmd_parse(self):
+    def _parse(self):
         self._validate()
-        self.type = self.body["cmd"]
+        self.cmd = self.body["cmd"]
         self.data = self.body["data"]
         self.log_time = self.body["log_time"]
         self.destination_node_id = self.body["node_to"]
         self.source_node_id = self.body["node_from"]
         self.message_id = self.body["msg_id"]
 
-    @property
-    def type(self) -> str:
-        return self._type
+    def _serialize(self, cmd, data, log_time, destination_node_id, source_node_id, message_id):
+        self.cmd = cmd
+        self.body["cmd"] = cmd
 
-    @type.setter
-    def type(self, value: str):
+        self.data = data
+        self.body["data"] = data
+
+        self.log_time = log_time
+        self.body["log_time"] = str(log_time)
+
+        self.destination_node_id = destination_node_id
+        self.body["node_to"] = destination_node_id
+
+        self.source_node_id = source_node_id
+        self.body["node_from"] = source_node_id
+
+        self.message_id = message_id
+        self.body["msg_id"] = message_id
+
+    @property
+    def cmd(self) -> str:
+        return self._cmd
+
+    @cmd.setter
+    def cmd(self, value: str):
         if value == "GET-NODE-LOG-FULL":
             pass
         elif value == "GET-NODE-LOG-BY-HOUR":
@@ -43,7 +65,7 @@ class DataMessage(Message):
         else:
             raise ValueError("Wrong Command Format!")
 
-        self._type = value
+        self._cmd = value
 
     @property
     def data(self):
@@ -54,7 +76,7 @@ class DataMessage(Message):
         try:
             value = literal_eval(value)
         except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
-            raise ValueError("Wrong Data Format!s")
+            raise ValueError("Wrong Data Format!")
 
         self._data = value
 
@@ -63,8 +85,11 @@ class DataMessage(Message):
         return self._log_time
 
     @log_time.setter
-    def log_time(self, value: str):
-        self._log_time = LogTime(str)
+    def log_time(self, value: (str, LogTime)):
+        if isinstance(value, LogTime):
+            self._log_time = value
+        else:
+            self._log_time = LogTime(value)
 
     @property
     def destination_node_id(self) -> str:
