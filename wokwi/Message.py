@@ -12,9 +12,11 @@ class Message:
     CLIENT_ID = None
 
     def __init__(self, message = None):
+        self._source_node_id = None
         self._body = {}
         if message is not None:
             self.body = message
+
 
     @property
     def body(self) -> dict:
@@ -32,7 +34,21 @@ class Message:
         if "cmd" not in message_dict:
             raise ValueError("Wrong Message Format!")
 
+        if "node_from" not in message_dict:
+            raise ValueError("Wrong Message Format!")
+
+        self.source_node_id = message_dict["node_from"]
         self._body = message_dict
+
+    @property
+    def source_node_id(self) -> str:
+        return self._source_node_id
+
+    @source_node_id.setter
+    def source_node_id(self, value: str):
+        if not isinstance(value, str):
+            raise ValueError("Wrong Message Format!")
+        self._source_node_id = value
 
     @staticmethod
     def _parse_json(message: str) -> dict:
