@@ -155,3 +155,8 @@ class TestCommandMessage(unittest.TestCase):
             self.assertEqual(str(err), "Wrong Day Format!")
 
 
+class TestDataMessage(unittest.TestCase):
+    pass
+
+class TestNetworkMessage(unittest.TestCase):
+    pass

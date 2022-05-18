@@ -1,8 +1,9 @@
 from network import WLAN, STA_IF
-from time import sleep
+from time import sleep, localtime
+from Time import Time, synchronize_local_time
 
 
-class CommunicationInterface():
+class CommunicationInterface:
 
     USER_NAME = "Wokwi-GUEST"
     PASSWORD = ""
@@ -17,7 +18,9 @@ class CommunicationInterface():
         while not self._physical_interface.isconnected():
             print(".", end="")
             sleep(0.1)
-        print(" Connected!")
+        print("\nConnected!",)
+        synchronize_local_time()
 
     def disconnect(self):
         self._physical_interface.disconnect()
+
