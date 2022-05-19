@@ -7,7 +7,7 @@ from machine import Timer, Pin
 
 
 class MessageHandler:
-    LED_PIN = 13
+    LED_PIN = 2
     TIMER_PERIOD = 10000
     # In simulator, It gives 20 seconds, but in reality it gives 47 seconds period.
     # If timer period pass 60s in reailty, then MQTT server kickouts our node.
@@ -25,7 +25,7 @@ class MessageHandler:
         print("Start")
         self._communication_protocol.connect()
         self._send_alive()
-        self._timer.init(period=10000, callback=self._send_alive)
+        self._timer.init(period=MessageHandler.TIMER_PERIOD, callback=self._send_alive)
         self._communication_protocol.run()
         
 
