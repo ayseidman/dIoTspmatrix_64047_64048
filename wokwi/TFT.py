@@ -54,7 +54,10 @@ class TFT(ILI9341):
 
     def clear(self):
         for pos in self._positions:
-            self.pixel(self._start_pos[0]+pos[1], self._start_pos[1]+pos[0], color565(0,0,0))
+            self.pixel(self._start_pos[0]+pos[1]*2, self._start_pos[1]+pos[0]*2, color565(0,0,0))
+            self.pixel(self._start_pos[0] + pos[1]*2+1, self._start_pos[1] + pos[0]*2, color565(0, 0, 0))
+            self.pixel(self._start_pos[0] + pos[1]*2, self._start_pos[1] + pos[0]*2+1, color565(0, 0, 0))
+            self.pixel(self._start_pos[0] + pos[1]*2+1, self._start_pos[1] + pos[0]*2+1, color565(0, 0, 0))
 
         self._positions.clear()
 
