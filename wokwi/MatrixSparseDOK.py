@@ -21,7 +21,7 @@ class MatrixSparseDOK(MatrixSparse):
     def change_zero(self):
         """ Overriding the zero.setter of parent class to delete the new zero valued items. """
         # Deleting the redundant elements that equals new zero value
-        self._items = {position:value for position, value in self._items.items() if value != self.zero}
+        self._items = {position: value for position, value in self._items.items() if value != self.zero}
 
     def __copy__(self):
         """ Deep copies the sparse matrix. """
@@ -141,11 +141,12 @@ class MatrixSparseDOK(MatrixSparse):
 
         matrix_muled_matrix = MatrixSparseDOK()
         for pos in self:
-            col = pos[1]-pos_min_self[1]
+            col = pos[1] - pos_min_self[1]
 
             for i in range(num_col_other):
                 if other[col + pos_min_other[0], i + pos_min_other[1]] != other.zero:
-                    matrix_muled_matrix[pos[0], i + pos_min_other[1]] += self[pos]*other[col + pos_min_other[0], i + pos_min_other[1]]
+                    matrix_muled_matrix[pos[0], i + pos_min_other[1]] += self[pos] * other[
+                        col + pos_min_other[0], i + pos_min_other[1]]
 
         matrix_muled_matrix.zero = self.zero
         return matrix_muled_matrix
@@ -189,12 +190,12 @@ class MatrixSparseDOK(MatrixSparse):
             raise ValueError("diagonal() matrix not square")
         pos_min, pos_max = self.dim()
 
-        if pos_max[0]-pos_min[0] != pos_max[1]-pos_min[1]:
+        if pos_max[0] - pos_min[0] != pos_max[1] - pos_min[1]:
             raise ValueError("diagonal() matrix not square")
         diagonal = MatrixSparseDOK()
         while pos_max != pos_min:
             diagonal[pos_min] = self[pos_min]
-            pos_min = Position(pos_min[0]+1, pos_min[1]+1)
+            pos_min = Position(pos_min[0] + 1, pos_min[1] + 1)
 
         diagonal[pos_min] = self[pos_min]
         return diagonal
@@ -237,7 +238,6 @@ class MatrixSparseDOK(MatrixSparse):
         Compresses the sparse matrix.
         :return: compressed matrix
         """
-
         if len(self) == 0:
             return (), self.zero, (), (), ()
 
@@ -254,7 +254,7 @@ class MatrixSparseDOK(MatrixSparse):
 
         row_list = []
 
-        for i in range(pos_min_self[0], num_row_self+pos_min_self[0]):
+        for i in range(pos_min_self[0], num_row_self + pos_min_self[0]):
             current_row = self.row(i)
 
             if len(current_row) != 0:
@@ -266,8 +266,8 @@ class MatrixSparseDOK(MatrixSparse):
         # Add first row directly to the values, indexes and offsets.
         first_row = row_list[0]
         for pos in first_row[2]:
-            values[0, pos[1]-first_row[3][1]] = first_row[2][pos]
-            indexes[0, pos[1]-first_row[3][1]] = first_row[1]
+            values[0, pos[1] - first_row[3][1]] = first_row[2][pos]
+            indexes[0, pos[1] - first_row[3][1]] = first_row[1]
 
         offsets[first_row[1] - pos_min_self[0]] = min_col_self - first_row[3][1]
 
@@ -280,7 +280,7 @@ class MatrixSparseDOK(MatrixSparse):
 
                 # For loop for row to be inserted.
                 for pos in row:
-                    idx_row = pos[1] - pos_min[1] # Normalize position
+                    idx_row = pos[1] - pos_min[1]  # Normalize position
                     idx_row += idx_values
                     if values[0, idx_row] != self.zero:
                         shift_required = True
@@ -292,7 +292,7 @@ class MatrixSparseDOK(MatrixSparse):
 
                 # Match found. Insert this row to available space.
                 for pos in row:
-                    idx_row = pos[1] - pos_min[1] # Normalize position
+                    idx_row = pos[1] - pos_min[1]  # Normalize position
                     idx_row += idx_values
                     values[0, idx_row] = row[pos]
                     indexes[0, idx_row] = row_num
@@ -306,9 +306,9 @@ class MatrixSparseDOK(MatrixSparse):
         values_tuple = ()
         indexes_tuple = ()
 
-        for index in range(max_pos_values[1]+1):
-            values_tuple += (values[0,index], )
-            indexes_tuple += (indexes[0,index], )
+        for index in range(max_pos_values[1] + 1):
+            values_tuple += (values[0, index],)
+            indexes_tuple += (indexes[0, index],)
 
         offsets_tuple = tuple(offsets)
 
@@ -318,13 +318,19 @@ class MatrixSparseDOK(MatrixSparse):
     def doi(compressed_vector: compressed, pos: Position) -> float:
         """ Returns the value of the given position by checking compressed matrix. """
         # Checking Parameters
+        """ Returns the value of the given position by checking compressed matrix. """
+        # Checking Parameters
         if not isinstance(pos, Position):
             raise ValueError("doi() invalid parameters")
 
         try:
             MatrixSparseDOK._check_compressed(compressed_vector)
-        except ValueError:
-            raise ValueError("doi() invalid parameters")
+        except ValueError as err:
+            if str(err) == "compressed_vector is empty":
+                upper_left_position, zero, values, indexes, offsets = compressed_vector
+                return zero
+            else:
+                raise ValueError("doi() invalid parameters")
 
         # All the checks completed.
         upper_left_position, zero, values, indexes, offsets = compressed_vector
@@ -355,7 +361,10 @@ class MatrixSparseDOK(MatrixSparse):
         # Checking Parameters
         try:
             MatrixSparseDOK._check_compressed(compressed_vector)
-        except ValueError:
+        except ValueError as err:
+            if str(err) == "compressed_vector is empty":
+                return MatrixSparseDOK()
+
             raise ValueError("decompress() invalid parameters")
 
         # All the checks completed.
@@ -366,7 +375,7 @@ class MatrixSparseDOK(MatrixSparse):
         for i, (value, index) in enumerate(zip(values, indexes)):
             if index == -1:
                 continue
-            decompressed[index, i-offsets[index - min_row] + min_col] = value
+            decompressed[index, i - offsets[index - min_row] + min_col] = value
 
         return decompressed
 
@@ -382,6 +391,9 @@ class MatrixSparseDOK(MatrixSparse):
         for idx, item in enumerate(compressed_vector):
             if not isinstance(item, types[idx]):
                 raise ValueError("compressed_vector is invalid")
+
+        if len(compressed_vector[0]) == 0 and len(compressed_vector[2])==0 and len(compressed_vector[3])==0 and len(compressed_vector[4])==0:
+            raise ValueError("compressed_vector is empty")
 
         if not (len(compressed_vector[0]) == 2 and len(compressed_vector[2]) == len(compressed_vector[3])):
             raise ValueError("compressed_vector is invalid")
