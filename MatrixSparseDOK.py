@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import sys
 
 from MatrixSparse import *
@@ -150,11 +148,12 @@ class MatrixSparseDOK(MatrixSparse):
 
         matrix_muled_matrix = MatrixSparseDOK()
         for pos in self:
-            col = pos[1]-pos_min_self[1]
+            col = pos[1] - pos_min_self[1]
 
             for i in range(num_col_other):
                 if other[col + pos_min_other[0], i + pos_min_other[1]] != other.zero:
-                    matrix_muled_matrix[pos[0], i + pos_min_other[1]] += self[pos]*other[col + pos_min_other[0], i + pos_min_other[1]]
+                    matrix_muled_matrix[pos[0], i + pos_min_other[1]] += self[pos] * other[
+                        col + pos_min_other[0], i + pos_min_other[1]]
 
         matrix_muled_matrix.zero = self.zero
         return matrix_muled_matrix
@@ -203,7 +202,7 @@ class MatrixSparseDOK(MatrixSparse):
         diagonal = MatrixSparseDOK()
         while pos_max != pos_min:
             diagonal[pos_min] = self[pos_min]
-            pos_min = Position(pos_min[0]+1, pos_min[1]+1)
+            pos_min = Position(pos_min[0] + 1, pos_min[1] + 1)
 
         diagonal[pos_min] = self[pos_min]
         return diagonal
@@ -263,7 +262,7 @@ class MatrixSparseDOK(MatrixSparse):
 
         row_list = []
 
-        for i in range(pos_min_self[0], num_row_self+pos_min_self[0]):
+        for i in range(pos_min_self[0], num_row_self + pos_min_self[0]):
             current_row = self.row(i)
 
             if len(current_row) != 0:
@@ -332,8 +331,12 @@ class MatrixSparseDOK(MatrixSparse):
 
         try:
             MatrixSparseDOK._check_compressed(compressed_vector)
-        except ValueError:
-            raise ValueError("doi() invalid parameters")
+        except ValueError as err:
+            if str(err) == "compressed_vector is empty":
+                upper_left_position, zero, values, indexes, offsets = compressed_vector
+                return zero
+            else:
+                raise ValueError("doi() invalid parameters")
 
         # All the checks completed.
         upper_left_position, zero, values, indexes, offsets = compressed_vector
@@ -364,7 +367,10 @@ class MatrixSparseDOK(MatrixSparse):
         # Checking Parameters
         try:
             MatrixSparseDOK._check_compressed(compressed_vector)
-        except ValueError:
+        except ValueError as err:
+            if str(err) == "compressed_vector is empty":
+                return MatrixSparseDOK()
+
             raise ValueError("decompress() invalid parameters")
 
         # All the checks completed.
@@ -375,7 +381,7 @@ class MatrixSparseDOK(MatrixSparse):
         for i, (value, index) in enumerate(zip(values, indexes)):
             if index == -1:
                 continue
-            decompressed[index, i-offsets[index - min_row] + min_col] = value
+            decompressed[index, i - offsets[index - min_row] + min_col] = value
 
         return decompressed
 
@@ -393,7 +399,7 @@ class MatrixSparseDOK(MatrixSparse):
                 raise ValueError("compressed_vector is invalid")
 
         if not (len(compressed_vector[0]) == 2 and len(compressed_vector[2]) == len(compressed_vector[3])):
-            raise ValueError("compressed_vector is invalid")
+            raise ValueError("compressed_vector is empty")
 
     @staticmethod
     def _check_pos(pos):
