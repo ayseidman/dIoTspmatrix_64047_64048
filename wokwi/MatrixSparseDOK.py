@@ -237,6 +237,10 @@ class MatrixSparseDOK(MatrixSparse):
         Compresses the sparse matrix.
         :return: compressed matrix
         """
+
+        if len(self) == 0:
+            return (), self.zero, (), (), ()
+
         if self.sparsity() < 0.5:
             raise ValueError("compress() dense matrix")
 
