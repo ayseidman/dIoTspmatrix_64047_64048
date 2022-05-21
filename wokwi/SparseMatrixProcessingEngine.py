@@ -43,6 +43,9 @@ class SparseMatrixProcessingEngine:
 
     def read_one_day(self, day_offset):
         requested_date = SparseMatrixProcessingEngine.convert_day_offset_to_date(day_offset)
+        if day_offset == 0:
+            return self._log_today
+
         try:
             log = self._logger.read(requested_date)
 
@@ -54,7 +57,6 @@ class SparseMatrixProcessingEngine:
         except LogNotFoundError:
             # Matrix is not in logs. Return Empty Matrix
             return MatrixSparseDOK()
-        
 
     def read_one_hour(self, day_offset, hour):
         requested_matrix = self.read_one_day(day_offset)
@@ -81,7 +83,6 @@ class SparseMatrixProcessingEngine:
         self._log_today[present_time.hour, present_time.minute] += 1
         print(self._log_today)
         self._matrix_manipulated = True
-        
 
     def _check_new_day(self, value=None):
         """ Check if it is a new day. If so, insert yesterday's log in logger.
