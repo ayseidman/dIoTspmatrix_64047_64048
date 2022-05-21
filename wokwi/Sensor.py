@@ -24,3 +24,6 @@ class Sensor:
 
     def _callback(self, _):
         self._callback_route()
+
+    def _callback(self, _):
+        self._callback_route()

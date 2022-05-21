@@ -89,3 +89,18 @@ class Time:
 
     def __sub__(self, day: int):
         return self.__add__(-day)
+
+        self.weekday = time_tuple[6]
+        self.weekday = time_tuple[7]
+
+    def seconds(self):
+        return mktime((self.year, self.month, self.day, self.hour, self.minute, self.second, self.weekday, self.yearday))
+
+    def __add__(self, day: int):
+        present_time = now()
+        present_time_secs = present_time.seconds()
+        seconds_different = day*Time.NUMBER_OF_HOUR_IN_DAY*Time.NUMBER_OF_MIN_IN_HOUR*Time.NUMBER_OF_SEC_IN_MIN
+        return Time(localtime(present_time_secs+seconds_different))
+
+    def __sub__(self, day: int):
+        return self.__add__(-day)

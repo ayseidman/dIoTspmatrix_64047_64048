@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "author": "Anonymous maker",
+  "author": "Kaan Arı",
   "editor": "wokwi",
   "parts": [
     {
@@ -15,8 +15,8 @@
     {
       "type": "wokwi-pir-motion-sensor",
       "id": "pir1",
-      "top": 99.87,
-      "left": 16.77,
+      "top": 166.32,
+      "left": 20.3,
       "rotate": 180,
       "attrs": {}
     },
@@ -27,7 +27,8 @@
       "left": 23.2,
       "rotate": 90,
       "attrs": {}
-    }
+    },
+    { "type": "wokwi-ili9341", "id": "lcd1", "top": -170.92, "left": -281.89, "attrs": {} }
   ],
   "connections": [
     [ "esp:TX0", "$serialMonitor:RX", "", [] ],
@@ -44,6 +45,13 @@
     [ "sd1:DI", "esp:D23", "purple", [ "v23.15", "h104.68", "v105.97" ] ],
     [ "sd1:DO", "esp:D19", "magenta", [ "v0" ] ],
     [ "sd1:SCK", "esp:D18", "violet", [ "v53.43", "h1.67" ] ],
-    [ "pir1:OUT", "esp:D4", "blue", [ "v-3.48", "h-24.45" ] ]
+    [ "lcd1:RST", "esp:D4", "green", [ "v22.97", "h247.61" ] ],
+    [ "lcd1:D/C", "esp:D2", "green", [ "v4.97", "h224.51" ] ],
+    [ "lcd1:SCK", "esp:D18", "green", [ "v13.97", "h250.94" ] ],
+    [ "lcd1:CS", "esp:D15", "green", [ "v32.61", "h237.93" ] ],
+    [ "lcd1:MOSI", "esp:D23", "green", [ "v13.97", "h323.53" ] ],
+    [ "lcd1:VCC", "esp:3V3", "red", [ "v50.29", "h234.23" ] ],
+    [ "lcd1:GND", "esp:GND.1", "black", [ "v42.43", "h234.45" ] ],
+    [ "pir1:OUT", "esp:D12", "green", [ "v-136.06", "h-35.94" ] ]
   ]
 }
