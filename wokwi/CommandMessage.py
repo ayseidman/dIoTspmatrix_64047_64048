@@ -3,13 +3,15 @@ from Message import Message, MessageDestinationError
 
 class CommandMessage(Message):
 
-    def __init__(self, message=None, cmd=None, day=0, hour=0, minute=0, destination_node_id=None, source_node_id=Message.CLIENT_ID, message_id=None):
-        super().__init__(message)
+    def __init__(self, message=None, cmd=None, day=None, hour=None, minute=None, destination_node_id=None, source_node_id=Message.CLIENT_ID, message_id=None, sending=False):
+        super().__init__(message, sending)
         self._cmd = None
         self._day = None
         self._hour = None
         self._minute = None
         self._destination_node_id = None
+
+        self._sending = sending
 
         self._message_id = None
         if message is not None:
@@ -40,10 +42,7 @@ class CommandMessage(Message):
         self.day = day
         self.body["day"] = day
 
-        try:
-            self.destination_node_id = destination_node_id
-        except MessageDestinationError:
-            self._destination_node_id = destination_node_id
+        self.destination_node_id = destination_node_id
 
         self.body["node_to"] = destination_node_id
 
@@ -109,7 +108,7 @@ class CommandMessage(Message):
     @minute.setter
     def minute(self, value: int):
         if not isinstance(value, int):
-            raise ValueError("Wrong Hour Format!")
+            raise ValueError("Wrong Minute Format!")
 
         if value < 0 or value > 59:
             raise ValueError("Wrong Minute Format!")
@@ -122,14 +121,15 @@ class CommandMessage(Message):
 
     @destination_node_id.setter
     def destination_node_id(self, value: str):
-        if not isinstance(value,str):
-            ValueError("Wrong Command Format!")
+        if not isinstance(value, str):
+            ValueError("Wrong Destination Format!")
 
-        if value not in ["ANY", Message.CLIENT_ID]:
+        if value not in ["ANY", Message.CLIENT_ID] and not self._sending:
             raise MessageDestinationError()
+
         self._destination_node_id = value
 
     def _validate(self):
         keys = ["day", "node_from", "node_to", "msg_id"]
         if not all(key in self.body for key in keys):
-            raise ValueError("Wrong Command Format!")
+            raise ValueError("Wrong Command Format (Some keys are missing)!")
