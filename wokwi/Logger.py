@@ -1,5 +1,12 @@
 from MatrixSparseDOK import MatrixSparseDOK
 from Time import now, Time
+from machine import SDCard
+from os import mount, mkdir, listdir, chdir
+
+# ToDo: In startup current_days log must be readed into RAM.
+# ToDo: Logs can be stored in SD card rather than storing it in RAM
+# ToDo: Since Restriction of Compress has been removed, insert all matrix as compressed
+# ToDo: WokWi cannot support requested logging system with SDCard.
 
 
 class LogNotFoundError(Exception):
@@ -9,14 +16,14 @@ class LogNotFoundError(Exception):
 
 
 class LogItem:
-
-    def __init__(self, compressed_matrix, log_time, compressed=True):
-        if compressed:
-            self.compressed_matrix = compressed_matrix
+    """ MatrixMarket (MM) Format. """
+    def __init__(self, matrix=None, log_time=None, mm_str=None):
+        if mm_str is None:
+            self.matrix = matrix
+            self.log_time = log_time
         else:
-            self.matrix = compressed_matrix
-        self.log_time = log_time
-        self.compressed = compressed
+            self.matrix = LogItem._convert_file_to_logitem(mm_str)
+            self.log_time = log_time
 
     @property
     def matrix(self):
@@ -30,20 +37,6 @@ class LogItem:
         self._matrix = value
 
     @property
-    def compressed_matrix(self):
-        return self._compressed_matrix
-
-    @compressed_matrix.setter
-    def compressed_matrix(self, value):
-        if not isinstance(value, tuple):
-            raise ValueError("Wrong Compressed Matrix")
-
-        if len(value) != 5:
-            raise ValueError("Wrong Compressed Matrix")
-
-        self._compressed_matrix = value
-
-    @property
     def log_time(self):
         return self._log_time
 
@@ -54,37 +47,102 @@ class LogItem:
 
         self._log_time = time
 
+    def __str__(self):
+        """ Return MatrixMarket (MM) Format String to be written in file.
+            #row      #col      #entry
+             r(1)      c(1)      val(1)
+             r(2)      c(2)      val(2)
+             r(3)      c(3)      val(3)
+              .         .          .
+              .         .          .
+              .         .          .
+         r(#entry)  c(#entry)  val(#entry)
+         See also: https://math.nist.gov/MatrixMarket/formats.html
+        """
+        min_pos, max_pos = self.matrix.dim()
+        num_row = max_pos[0] - min_pos[0] + 1
+        num_col = max_pos[1] - min_pos[1] + 1
+        MM_format = "{} {} {}\n".format(num_row, num_col, len(self.matrix))
+
+        for entry in self.matrix:
+            row, col = entry[0], entry[1]
+            value = self.matrix[entry]
+            MM_format += "{} {} {:.1f}\n".format(row, col, value)
+
+        return MM_format
+
+    @staticmethod
+    def _convert_file_to_logitem(mm_str:str):
+        if not isinstance(mm_str, str):
+            raise("Wrong Format for MM String")
+
+        lines = mm_str.splitlines()
+        num_row, num_col, num_entry = map(int, lines[0].split())
+        entries = lines[1:]
+        matrix = MatrixSparseDOK()
+        for entry in entries:
+            row, col, value = entry.split()
+            row = int(row)
+            col = int(col)
+            value = float(value)
+            matrix[row,col] = value
+
+        return matrix
+
 
 class Logger:
-
+    DEFAULT_SPI_SCK = 18
+    DEFAULT_SPI_MOSI = 23
+    DEFAULT_SPI_MISO = 19
+    DEFAULT_SPI_CS = 5
+    DEFAULT_SPI_CD = 34
     def __init__(self):
         self._logs = {}
+        self._main_directory = "/logs"
+        # Connect SD Card
+        self._sd_card = SDCard(slot=2, cd=Logger.DEFAULT_SPI_CD, sck=Logger.DEFAULT_SPI_SCK, miso=Logger.DEFAULT_SPI_MISO,
+                         mosi=Logger.DEFAULT_SPI_MOSI, cs=Logger.DEFAULT_SPI_CS, freq=40000000)
+        mount(self._sd_card, self._main_directory)
+        # Read current days log
+        print(listdir())
+        print(listdir("/logs"))
+        self.import_log()
+
 
     def insert(self, matrix: MatrixSparseDOK):
-        compressed_flag = True
-        try:
-            compressed = matrix.compress()
-        except ValueError as err:
-            if str(err) == "compress() dense matrix":
-                # IF matrix is dense, insert itself instead of compressing
-                compressed = matrix
-                compressed_flag = False
-                
-
+        """ Insert a log and save as a file """
         log_time = now()
-        log = LogItem(compressed, log_time, compressed=compressed_flag)
+        log = LogItem(matrix, log_time)
         # Insert the new log!
-        date_tuple = (log_time.year, log_time.month, log_time.day)
-        self._logs[date_tuple] = log
+        log_filename = "{:04}_{:02}_{:02}.txt".format(log_time.year, log_time.month, log_time.day)
+    
+        with open(log_filename, "w") as log_file:
+            log_file.write(str(log))
+        
+        # For Test
+        print(matrix)
+        with open(log_filename) as log_file:
+            print(log_file.read())
 
     def read(self, date: Time) -> LogItem:
+        """ Read requested log """
         if not isinstance(date, Time):
             raise ValueError("Wrong Date Format!")
-        date_tuple = (date.year, date.month, date.day)
-        if date_tuple not in self._logs:
+        log_filename = "{:04}_{:02}_{:02}.txt".format(date.year, date.month, date.day)
+        date.hour = 23
+        date.minute = 59
+        print("FILENAME:"+log_filename+"-")
+        try:
+            with open(log_filename) as log_file:
+                MM_file = log_file.read()
+                print(MM_file)
+        except OSError as err:
+            print("NO FILE", str(err))
             raise LogNotFoundError(date)
+        requested_log = LogItem(mm_str=MM_file, log_time=date)
+        print(requested_log.matrix)
 
-        return self._logs[date_tuple]
+        return requested_log
 
     def clear(self, date: Time):
         if not isinstance(date, Time):
@@ -95,9 +153,5 @@ class Logger:
 
         del self._logs[date]
 
-    def export_log(self):
-        pass
-
     def import_log(self):
         pass
-

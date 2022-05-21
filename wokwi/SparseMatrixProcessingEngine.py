@@ -48,11 +48,7 @@ class SparseMatrixProcessingEngine:
 
         try:
             log = self._logger.read(requested_date)
-
-            if log.compressed:
-                return MatrixSparseDOK.decompress(log.compressed_matrix)
-            else:
-                return log.matrix
+            return log.matrix
 
         except LogNotFoundError:
             # Matrix is not in logs. Return Empty Matrix
