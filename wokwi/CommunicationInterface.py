@@ -24,3 +24,6 @@ class CommunicationInterface:
     def disconnect(self):
         self._physical_interface.disconnect()
 
+    def check_connection(self):
+        return self._physical_interface.isconnected()
+
