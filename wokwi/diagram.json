@@ -52,6 +52,7 @@
     [ "lcd1:MOSI", "esp:D23", "green", [ "v13.97", "h323.53" ] ],
     [ "lcd1:VCC", "esp:3V3", "red", [ "v50.29", "h234.23" ] ],
     [ "lcd1:GND", "esp:GND.1", "black", [ "v42.43", "h234.45" ] ],
-    [ "pir1:OUT", "esp:D12", "green", [ "v-136.06", "h-35.94" ] ]
+    [ "pir1:OUT", "esp:D12", "green", [ "v-136.06", "h-35.94" ] ],
+    [ "sd1:CD", "esp:D34", "green", [ "v15.92", "h9.88" ] ]
   ]
 }
