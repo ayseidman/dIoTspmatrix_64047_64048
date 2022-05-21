@@ -1,6 +1,6 @@
 from umqtt.simple import MQTTClient
 from CommunicationInterface import CommunicationInterface
-
+from time import sleep
 
 class MQTT(CommunicationInterface, MQTTClient):
     CLIENT_ID = "dIoTspmatrix_64047_64048"
@@ -17,6 +17,7 @@ class MQTT(CommunicationInterface, MQTTClient):
         self._handle_cmd = None
         self._handle_data = None
         self._handle_net = None
+        self._run = False
 
     def connect(self):
         CommunicationInterface.connect(self)
@@ -31,16 +32,26 @@ class MQTT(CommunicationInterface, MQTTClient):
         self._subscribe_topics()
 
     def disconnect(self):
+        self._run = False
         MQTTClient.disconnect(self)
         CommunicationInterface.disconnect(self)
 
     def reconnect(self):
+        self._run = False
         #self.disconnect()
-        #self.connect()
+        MQTTClient.disconnect(self)
+        sleep(2)
+        MQTTClient.connect(self)
+        MQTTClient.set_callback(self, self._callback)
+        self._subscribe_topics()
         pass
 
+    def stop(self):
+        self._run = False
+
     def run(self):
-        while 1:
+        self._run = True
+        while self._run:
             MQTTClient.check_msg(self)
 
     def set_callback(self, handle_cmd, handle_data, handle_net):

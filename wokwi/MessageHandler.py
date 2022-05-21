@@ -17,12 +17,13 @@ class MessageHandler:
     # If timer period pass 60s in reality, then MQTT server kicks out our node.
     # So that we had to set timer 20 seconds in simulation.
 
-    EDGE_COMP_PERIOD = 20000
+    EDGE_COMP_PERIOD = 12000
     ECHO_PERIOD = 1000
 
     def __init__(self, matrix_engine, communication_protocol=MQTT):
         Message.CLIENT_ID = communication_protocol.CLIENT_ID # Sharing CLIENT_ID with all message types
         self._is_edge_computing = False
+        self._is_edge_computing_done = False
         self._is_echo_received = False
         self._edge_computing_requester = None
         self._edge_computing_matrix = None
@@ -47,16 +48,13 @@ class MessageHandler:
         self._communication_protocol.run()
 
     def reconnect(self):
-        print("Reconnecting...")
-        #self._communication_protocol.reconnect()
-        #del self._communication_protocol
-        self._communication_protocol.disconnect()
-        print("C")
-        sleep(5)
-        self._communication_protocol.connect()
-        print("A")
-        self._send_alive()
-        print("B")
+        """ WokWi aborts connection when you open different application. Hence, connection gets lost.
+            We tried reconnection by disconnecting and connecting. However, it did not work for WokWi.
+            Therefore, we reset the ESP32 in a fail of connection.
+            Reset is not working. When we reset, device keeps resetting.
+        """
+        print("Need to  reconnect. Please Reset WokWi.")
+        # Save the current Log
 
     def stop(self):
         self._communication_protocol.disconnect()
@@ -117,9 +115,18 @@ class MessageHandler:
         """ Handle messages coming from DATA topic. """
         try:
             if not self._is_edge_computing:
+                if self._is_edge_computing_done:
+                    # Echo
+                    self._is_echo_received = True
+                    self._is_edge_computing_done = False
                 return None
 
             message = DataMessage(message_str)
+
+            if message.source_node_id == Message.CLIENT_ID:
+                # Echo Message
+                self._is_echo_received = True
+                return None
 
             if message.message_id != self._edge_computing_receive_id:
                 # Wrong Message ID response
@@ -161,7 +168,7 @@ class MessageHandler:
 
     def _echo_timer_set(self):
         self._is_echo_received = False
-        self._edge_computing_timer.init(period=MessageHandler.ECHO_PERIOD, mode=Timer.ONE_SHOT,
+        self._echo_timer.init(period=MessageHandler.ECHO_PERIOD, mode=Timer.ONE_SHOT,
                                         callback=self._check_echo)
 
     def _send_alive(self, value=None):
@@ -189,7 +196,7 @@ class MessageHandler:
                                   source_node_id=Message.CLIENT_ID, message_id=msg_id, sending=True)
 
         self._echo_timer_set()
-
+        self._is_edge_computing_done = False
         self._edge_computing_receive_id = msg_id
         self._communication_protocol.send_command(str(response))
 
@@ -203,6 +210,7 @@ class MessageHandler:
                                                    dest_id=self._edge_computing_requester,
                                                    msg_id=self._edge_computing_id)
 
+        self._is_edge_computing_done = True
         self._echo_timer_set()
         self._communication_protocol.send_data(str(response))
         self._is_edge_computing = False
