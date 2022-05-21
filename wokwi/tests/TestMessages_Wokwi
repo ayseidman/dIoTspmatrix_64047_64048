@@ -1,0 +1,47 @@
+{ "cmd": "GET-NODE-LOG-FULL",
+"day": 0,
+"node_from": "deneme",
+"node_to": "dsfsdfsf",
+"msg_id": "3dewfewf" }
+
+{ "cmd": "GET-NODE-LOG-BY-HOUR",
+"day": 0,
+"hour": 0,
+"node_from": "deneme",
+"node_to": "dsfsdfsf",
+"msg_id": "3dewfewf" }
+
+{ "cmd": "GET-NODE-LOG-BY-MINUTE",
+"day": 0,
+"hour": 0,
+"node_from": "deneme",
+"node_to": "dsfsdfsf",
+"msg_id": "3dewfewf" }
+
+{ "cmd": "GET-ALL-LOG-FULL",
+"day": 0,
+"node_from": "deneme",
+"node_to": "dIoTspmatrix_64047_64048",
+"msg_id": "3dewfewf" }
+
+{ "cmd": "GET-NODE-LOG-FULL",
+"data": [[5, 4], 0.0, [7.4, 7.5, 5.5, 5.6, 7.8, 6.7, 0.0], [7, 7, 5, 5, 7, 6, -1], [1, 2, 0]],
+"log_time": "23:59",
+"node_from": "240ac400",
+"node_to": "dIoTspmatrix_64047_64048",
+"msg_id": “x” }
+
+----
+
+{ "cmd": "GET-ALL-LOG-FULL",
+"day": 0,
+"node_from": "deneme",
+"node_to": "dIoTspmatrix_64047_64048",
+"msg_id": "3dewfewf" }
+
+{ "cmd": "GET-NODE-LOG-FULL",
+"data": [[5, 4], 0.0, [7.4, 7.5, 5.5, 5.6, 7.8, 6.7], [7, 7, 5, 5, 7, 6], [1, 2, 0]],
+"log_time": "23:59",
+"node_from": "240acsdfd400",
+"node_to": "dIoTspmatrix_64047_64048",
+"msg_id": "3152fae8-ec3d-466f-92fd-30dba094c3dd"}
