@@ -1,6 +1,8 @@
+import time
+
 import ntptime
 from machine import RTC
-from time import localtime
+from time import localtime, mktime
 
 # Time Configs
 ntptime.host = "1.europe.pool.ntp.org"
@@ -8,8 +10,10 @@ UTC = 1
 
 RTC = RTC()
 
+
 def now():
     return Time(localtime())
+
 
 def synchronize_local_time():
     """ Set current time from NTP server. """
@@ -19,8 +23,11 @@ def synchronize_local_time():
     RTC.datetime((year, month, day, weekday, hour + UTC, minute, second, 0))
     print("Time is set to ", now())
 
-class Time:
 
+class Time:
+    NUMBER_OF_SEC_IN_MIN = 60
+    NUMBER_OF_MIN_IN_HOUR = 60
+    NUMBER_OF_HOUR_IN_DAY = 24
     def __init__(self, time=None):
         self.year = None
         self.month = None
@@ -28,6 +35,8 @@ class Time:
         self.hour = None
         self.minute = None
         self.second = None
+        self.weekday = None
+        self.yearday = None
 
         if isinstance(time, str):
             self.str_to_time(time)
@@ -65,3 +74,18 @@ class Time:
         self.hour = time_tuple[3]
         self.minute = time_tuple[4]
         self.second = time_tuple[5]
+
+        self.weekday = time_tuple[6]
+        self.weekday = time_tuple[7]
+
+    def seconds(self):
+        return mktime((self.year, self.month, self.day, self.hour, self.minute, self.second, self.weekday, self.yearday))
+
+    def __add__(self, day: int):
+        present_time = now()
+        present_time_secs = present_time.seconds()
+        seconds_different = day*Time.NUMBER_OF_HOUR_IN_DAY*Time.NUMBER_OF_MIN_IN_HOUR*Time.NUMBER_OF_SEC_IN_MIN
+        return Time(localtime(present_time_secs+seconds_different))
+
+    def __sub__(self, day: int):
+        return self.__add__(-day)
