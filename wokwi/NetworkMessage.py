@@ -2,11 +2,12 @@ from Message import Message
 from time import localtime
 from Time import Time, now
 
+
 class NetworkMessage(Message):
     TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-    def __init__(self, message=None, cmd=None, source_node_id=None, timestamp=None):
-        super().__init__(message)
+    def __init__(self, message=None, cmd=None, source_node_id=None, timestamp=None, sending=False):
+        super().__init__(message, sending=True)
         self._cmd = None
         self._timestamp = None
 

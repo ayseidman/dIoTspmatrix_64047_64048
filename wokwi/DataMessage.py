@@ -5,14 +5,16 @@ from LogTime import LogTime
 
 class DataMessage(Message):
 
-    def __init__(self, message=None, cmd=None, data=[], log_time=None, destination_node_id=None, source_node_id=None, message_id=None):
-        super().__init__(message)
+    def __init__(self, message=None, cmd=None, data=[], log_time=None, destination_node_id=None, source_node_id=None, message_id=None, sending=False):
+        super().__init__(message, sending)
         self._cmd = None
         self._data = None
         self._log_time = None
         self._destination_node_id = None
         self._source_node_id = None
         self._message_id = None
+
+        self._is_sending = sending
 
         if message is not None:
             self._parse()
@@ -73,8 +75,8 @@ class DataMessage(Message):
         return self._data
 
     @data.setter
-    def data(self, value: str):
-        if not isinstance(value,list):
+    def data(self, value):
+        if not isinstance(value, (list,tuple)):
             raise ValueError("Wrong Data Format!")
 
         self._data = value
@@ -96,7 +98,7 @@ class DataMessage(Message):
 
     @destination_node_id.setter
     def destination_node_id(self, value: str):
-        if value not in ["ANY", MQTT.CLIENT_ID]:
+        if value not in ["ANY", MQTT.CLIENT_ID] and not self._is_sending:
             raise MessageDestinationError()
         self._destination_node_id = value
 

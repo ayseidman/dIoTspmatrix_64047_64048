@@ -31,11 +31,15 @@ class MQTT(CommunicationInterface, MQTTClient):
         self._subscribe_topics()
 
     def disconnect(self):
-        CommunicationInterface.disconnect(self)
         MQTTClient.disconnect(self)
+        CommunicationInterface.disconnect(self)
+
+    def reconnect(self):
+        #self.disconnect()
+        #self.connect()
+        pass
 
     def run(self):
-        #MQTTClient.wait_msg(self)
         while 1:
             MQTTClient.check_msg(self)
 
@@ -85,4 +89,3 @@ class MQTT(CommunicationInterface, MQTTClient):
             raise "Message must be string"
         message = message.encode()
         MQTTClient.publish(self, MQTT.TOPIC_NET, message)
-        
