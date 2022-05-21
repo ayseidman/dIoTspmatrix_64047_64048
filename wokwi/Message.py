@@ -7,13 +7,22 @@ class MessageDestinationError(Exception):
         super().__init__("Wrong Message Destination")
 
 
+class MessageEchoError(Exception):
+    """ Message Destination is not current Node! """
+    def __init__(self):
+        super().__init__("Echo message. Ignore it!")
+
+
+
 class Message:
 
     CLIENT_ID = None
 
-    def __init__(self, message = None):
+    def __init__(self, message = None, sending=False):
         self._source_node_id = None
         self._body = {}
+        self._sending=sending
+
         if message is not None:
             self.body = message
 
@@ -48,6 +57,10 @@ class Message:
     def source_node_id(self, value: str):
         if not isinstance(value, str):
             raise ValueError("Wrong Message Format!")
+
+        if value == Message.CLIENT_ID and not self._sending:
+            raise MessageEchoError
+
         self._source_node_id = value
 
     @staticmethod
