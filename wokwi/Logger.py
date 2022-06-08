@@ -3,10 +3,8 @@ from Time import now, Time
 from machine import SDCard
 from os import mount, mkdir, listdir, chdir
 
-# ToDo: In startup current_days log must be readed into RAM.
-# ToDo: Logs can be stored in SD card rather than storing it in RAM
-# ToDo: Since Restriction of Compress has been removed, insert all matrix as compressed
-# ToDo: WokWi cannot support requested logging system with SDCard.
+# ToDo: In startup current_days log must be readed into RAM (mount_log).
+# ToDo: Logs can be stored in SD card rather than storing it in RAM (Partially done, today's log needs to be moved file instead of RAM).
 
 
 class LogNotFoundError(Exception):
