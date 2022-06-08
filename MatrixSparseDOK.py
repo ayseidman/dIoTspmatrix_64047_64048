@@ -105,14 +105,7 @@ class MatrixSparseDOK(MatrixSparse):
         if not isinstance(other, MatrixSparse):
             raise ValueError("_add_matrix() incompatible matrices")
 
-        pos_min_self, pos_max_self = self.dim()
-        pos_min_other, pos_max_other = other.dim()
-        num_row_self = pos_max_self[0] - pos_min_self[0] + 1
-        num_col_self = pos_max_self[1] - pos_min_self[1] + 1
-        num_row_other = pos_max_other[0] - pos_min_other[0] + 1
-        num_col_other = pos_max_other[1] - pos_min_other[1] + 1
-
-        if self.zero != other.zero or num_row_self != num_row_other or num_col_self != num_col_other:
+        if self.zero != other.zero:
             raise ValueError("_add_matrix() incompatible matrices")
 
         matrix_added_matrix = self.__copy__()
