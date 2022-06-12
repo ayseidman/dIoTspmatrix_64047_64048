@@ -18,7 +18,7 @@ class MessageHandler:
     # So that we had to set timer 20 seconds in simulation.
 
     EDGE_COMP_PERIOD = 12000
-    ECHO_PERIOD = 1000
+    ECHO_PERIOD = 5000
 
     def __init__(self, matrix_engine, communication_protocol=MQTT):
         Message.CLIENT_ID = communication_protocol.CLIENT_ID # Sharing CLIENT_ID with all message types
@@ -61,10 +61,8 @@ class MessageHandler:
 
     def _cmd_receive(self, message_str):
         """ Handle messages coming from CMD topic. """
-        print("CMD")
         try:
             message = CommandMessage(message_str)
-            print(message.cmd, type(message.cmd))
 
             if message.cmd == "GET-ALL-LOG-FULL":
                 self._edge_computing_requester = message.source_node_id
@@ -81,19 +79,19 @@ class MessageHandler:
             else:
                 data = None
                 if message.cmd == 'GET-NODE-LOG-FULL':
-                    print("LOG FULL")
+                    print("[DEBUG]: LOG FULL")
                     try:
                         data = self._matrix_engine.read_one_day(message.day).compress()
                     except ValueError:
                         data = "Sparsity < 0.5"
                 elif message.cmd == "GET-NODE-LOG-BY-HOUR":
-                    print("LOG HOUR")
+                    print("[DEBUG]: LOG HOUR")
                     try:
                         data = self._matrix_engine.read_one_hour(message.day, message.hour).compress()
                     except ValueError:
                         data = "Sparsity < 0.5"
                 elif message.cmd == "GET-NODE-LOG-BY-MINUTE":
-                    print("LOG MINUTE")
+                    print("[DEBUG]: LOG MINUTE")
                     try:
                         data = self._matrix_engine.read_one_minute(message.day, message.minute).compress()
                     except ValueError:
@@ -104,7 +102,7 @@ class MessageHandler:
 
         except MessageDestinationError:
             # Do nothing, wrong node (This node is not supposed to reply
-            print("Wrong Source")
+            print("[DEBUG]: Wrong Source")
             return None
         except MessageEchoError:
             self._is_echo_received = True
@@ -172,7 +170,7 @@ class MessageHandler:
                                         callback=self._check_echo)
 
     def _send_alive(self, value=None):
-        print("ALIVE: ")
+        print("[DEBUG]: ALIVE")
         self._echo_timer_set()
 
         self._led_state = 0 if self._led_state else 1

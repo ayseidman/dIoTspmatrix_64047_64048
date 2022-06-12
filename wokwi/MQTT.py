@@ -72,7 +72,7 @@ class MQTT(CommunicationInterface, MQTTClient):
     def _callback(self, topic, message):
         topic = topic.decode("utf-8")
         message = message.decode("utf-8")
-        print(message)
+        #print(message)
         if topic == MQTT.TOPIC_CMD:
             self._handle_cmd(message)
         elif topic == MQTT.TOPIC_DATA:

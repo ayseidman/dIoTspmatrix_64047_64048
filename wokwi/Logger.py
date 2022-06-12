@@ -3,18 +3,16 @@ from Time import now, Time
 from machine import SDCard
 from os import mount, mkdir, listdir, chdir
 
-# ToDo: In startup current_days log must be readed into RAM (mount_log).
-# ToDo: Logs can be stored in SD card rather than storing it in RAM (Partially done, today's log needs to be moved file instead of RAM).
-
 
 class LogNotFoundError(Exception):
 
     def __init__(self, date: Time):
-        super().__init__("Log instance for date {}/{}/{} cannot be found.".format(date.day,date.month,date.year))
+        super().__init__("Log instance for date {}/{}/{} cannot be found.".format(date.day, date.month, date.year))
 
 
 class LogItem:
     """ MatrixMarket (MM) Format. """
+
     def __init__(self, matrix=None, log_time=None, mm_str=None):
         if mm_str is None:
             self.matrix = matrix
@@ -70,9 +68,9 @@ class LogItem:
         return MM_format
 
     @staticmethod
-    def _convert_file_to_logitem(mm_str:str):
+    def _convert_file_to_logitem(mm_str: str):
         if not isinstance(mm_str, str):
-            raise("Wrong Format for MM String")
+            raise ("Wrong Format for MM String")
 
         lines = mm_str.splitlines()
         num_row, num_col, num_entry = map(int, lines[0].split())
@@ -83,7 +81,7 @@ class LogItem:
             row = int(row)
             col = int(col)
             value = float(value)
-            matrix[row,col] = value
+            matrix[row, col] = value
 
         return matrix
 
@@ -94,18 +92,15 @@ class Logger:
     DEFAULT_SPI_MISO = 19
     DEFAULT_SPI_CS = 5
     DEFAULT_SPI_CD = 34
+
     def __init__(self):
         self._logs = {}
         self._main_directory = "/logs"
         # Connect SD Card
-        self._sd_card = SDCard(slot=2, cd=Logger.DEFAULT_SPI_CD, sck=Logger.DEFAULT_SPI_SCK, miso=Logger.DEFAULT_SPI_MISO,
-                         mosi=Logger.DEFAULT_SPI_MOSI, cs=Logger.DEFAULT_SPI_CS, freq=40000000)
+        self._sd_card = SDCard(slot=2, cd=Logger.DEFAULT_SPI_CD, sck=Logger.DEFAULT_SPI_SCK,
+                               miso=Logger.DEFAULT_SPI_MISO,
+                               mosi=Logger.DEFAULT_SPI_MOSI, cs=Logger.DEFAULT_SPI_CS, freq=40000000)
         mount(self._sd_card, self._main_directory)
-        # Read current days log
-        print(listdir())
-        print(listdir("/logs"))
-        self.import_log()
-
 
     def insert(self, matrix: MatrixSparseDOK):
         """ Insert a log and save as a file """
@@ -113,12 +108,11 @@ class Logger:
         log = LogItem(matrix, log_time)
         # Insert the new log!
         log_filename = "{:04}_{:02}_{:02}.txt".format(log_time.year, log_time.month, log_time.day)
-    
+
         with open(log_filename, "w") as log_file:
             log_file.write(str(log))
-        
+
         # For Test
-        print(matrix)
         with open(log_filename) as log_file:
             print(log_file.read())
 
@@ -129,20 +123,18 @@ class Logger:
         log_filename = "{:04}_{:02}_{:02}.txt".format(date.year, date.month, date.day)
         date.hour = 23
         date.minute = 59
-        print("FILENAME:"+log_filename+"-")
+
         try:
             with open(log_filename) as log_file:
                 MM_file = log_file.read()
-                print(MM_file)
         except OSError as err:
-            print("NO FILE", str(err))
             raise LogNotFoundError(date)
         requested_log = LogItem(mm_str=MM_file, log_time=date)
-        print(requested_log.matrix)
 
         return requested_log
 
     def clear(self, date: Time):
+        # ToDo: Must be checked
         if not isinstance(date, Time):
             raise ValueError("Wrong Date Format!")
 
@@ -152,4 +144,5 @@ class Logger:
         del self._logs[date]
 
     def import_log(self):
-        pass
+        date = now()
+        return self.read(date).matrix

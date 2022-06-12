@@ -8,11 +8,11 @@ from TFT import TFT
 
 
 class SparseMatrixProcessingEngine:
-    TIMER_PERIOD = 10000 # Check in each minute
+    TIMER_PERIOD = 10000  # Check in each minute
     # Simulation run longer than real.
 
     def __init__(self, message_handler=MessageHandler, sensor=Sensor, logger=Logger, screen=TFT):
-        self._log_today = MatrixSparseDOK()
+
         self._logger_enable = True
         self._matrix_manipulated = False
 
@@ -22,18 +22,28 @@ class SparseMatrixProcessingEngine:
         if not callable(sensor):
             raise ValueError("Sensor Class must be callable.")
 
-        if not callable(sensor):
+        if not callable(logger):
             self._logger_enable = False
 
         self._message_handler = message_handler(matrix_engine=self)
         self._sensor = sensor(callback=self._sensor_callback)
         self._logger = logger()
+
+        self._log_today = MatrixSparseDOK()
+
         self._screen = screen()
         self.initialize()
+        # Import Today's Log
+        try:
+            self._log_today = self._logger.import_log()
+            self._matrix_manipulated = True
+        except LogNotFoundError:
+            pass
 
         self._last_checked_time = now()
         self._timer = Timer(0)
-        self._timer.init(period=SparseMatrixProcessingEngine.TIMER_PERIOD, mode=Timer.PERIODIC, callback=self._check_new_day)
+        self._timer.init(period=SparseMatrixProcessingEngine.TIMER_PERIOD, mode=Timer.PERIODIC,
+                         callback=self._check_new_day)
 
     def initialize(self):
         self._message_handler.initialize()
@@ -71,22 +81,23 @@ class SparseMatrixProcessingEngine:
         if day_offset > 0:
             raise ValueError("There is no future data. (System is causal)")
 
-        return present_time+day_offset
+        return present_time + day_offset
 
     def _sensor_callback(self):
         """ Log into MatrixSparseDOK object by looking current time. """
         present_time = now()
         self._log_today[present_time.hour, present_time.minute] += 1
-        print(self._log_today)
+        print("[DEBUG]: Sensor Pressed! Matrix is updated!")
         self._matrix_manipulated = True
 
     def _check_new_day(self, value=None):
         """ Check if it is a new day. If so, insert yesterday's log in logger.
             Also regularly draw matrix to the screen, if matrix is change.
         """
-        print("Check if it is new day!")
+        print("[DEBUG]: Check if it is new day!")
 
         if self._matrix_manipulated:
+            print("[DEBUG]: Screen is updating...")
             # Matrix is manipulated draw new matrix
             self._screen.print_matrix(self._log_today)
             self._matrix_manipulated = False
@@ -94,7 +105,7 @@ class SparseMatrixProcessingEngine:
         present_time = now()
         if self._last_checked_time.day != present_time.day:
             """ New Day. Write logs and clear matrix"""
-            print("New Day!")
+            print("[DEBUG]: New Day!")
             if self._logger_enable:
                 self._logger.insert(self._log_today)
 
@@ -102,7 +113,7 @@ class SparseMatrixProcessingEngine:
             self._log_today = MatrixSparseDOK()
             self._screen.clear()
 
-            print("Logging is done!")
+            print("[DEBUG]: Logging is done!")
 
         self._last_checked_time = present_time
 
