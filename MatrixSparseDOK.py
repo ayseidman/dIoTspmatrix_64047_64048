@@ -49,14 +49,10 @@ class MatrixSparseDOK(MatrixSparse):
         """ Sorts the self._items to be used as iterator.  """
         self._index = -1
         self._items_sorted = sorted(self._items.keys(), key=lambda pos: (pos[0], pos[1]))
-        return self
+        return iter(self._items_sorted)
 
     def __next__(self):
-        """ Returns the next item in iterable object. """
-        self._index += 1
-        if self._index == len(self):
-            raise StopIteration
-        return self._items_sorted[self._index]
+        pass
 
     def __getitem__(self, pos: [Position, position]) -> float:
         """ Gets the item at given position in sparse matrix. """
